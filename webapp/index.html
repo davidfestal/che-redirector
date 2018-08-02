@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+<script type="text/javascript">
+
+(function() {
+	try {
+	    var request = new XMLHttpRequest();
+
+	    request.onerror = request.onabort = function() {
+	        console.error("error");
+	    };
+
+	    request.onload = function() {
+	        if (request.status == 200) {
+	            injectKeycloakScript(JSON.parse(this.responseText));
+	        } else {
+	            console.error(request);
+	        }
+	    };
+
+	    var url = "https://che.openshift.io/api/keycloak/settings";
+	    request.open("GET", url, true);
+	    request.send();
+	} catch (e) {
+	    console.error("error when getting Keycloak settings", e);
+	}
+
+    this.injectKeycloakScript = function(keycloakSettings) {
+        var script = document.createElement("script");
+        script.type = "text/javascript";
+        script.language = "javascript";
+        script.async = true;
+        script.src = 'RhCheKeycloak.js';
+
+        script.onload = function() {
+            initKeycloak(keycloakSettings);
+        };
+        
+        script.onerror = script.onabort = function() {
+            console.error("Cannot load " + script.src);
+        };
+                            
+        document.head.appendChild(script);
+    };
+
+    /*
+     * Initialize keycloak and load the IDE
+     */
+    this.initKeycloak = function(keycloakSettings) {
+        function keycloakConfig() {
+          const theOidcProvider = keycloakSettings['che.keycloak.oidc_provider'];
+          if (!theOidcProvider) {
+              return {
+                url: keycloakSettings['che.keycloak.auth_server_url'],
+                realm: keycloakSettings['che.keycloak.realm'],
+                clientId: keycloakSettings['che.keycloak.client_id']
+              };
+            } else {
+              return {
+                oidcProvider: theOidcProvider,
+                clientId: keycloakSettings['che.keycloak.client_id']
+              };
+            }
+        }
+        var keycloak = Keycloak(keycloakConfig());
+        
+        window['_keycloak'] = keycloak;
+        
+        keycloakInit(keycloak, keycloakSettings);
+    };
+
+    this.keycloakInit = function(keycloak, keycloakSettings) {
+        
+        var useNonce;
+        if (typeof keycloakSettings['che.keycloak.use_nonce'] === 'string') {
+          useNonce = keycloakSettings['che.keycloak.use_nonce'].toLowerCase() === 'true';
+        }
+      
+      keycloak.init({onLoad: 'login-required', checkLoginIframe: false, useNonce: useNonce})
+      .success(function(authenticated) {
+    	  window.alert("User = " + keycloak.tokenParsed.name);
+      })
+      .error(function (data) {
+          console.log('[Keycloak] Failed to initialize Keycloak: ', data);
+      });
+    }
+})()
+
+</script>
+<div>URL query part: <span id="query"></span></div>
+<button onclick="window['_keycloak'].logout()">logout</button>
+<a href="https://manage.openshift.com/openshiftio">manage.openshift.com</a>
+<div>manage.openshift.com output: <span id="provisioning"></span></div>
+</body>
+</html>
