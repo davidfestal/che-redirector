@@ -204,7 +204,7 @@ Please enable popups, before retrying";
 				var notificationDiv = document.createElement('div');
 				notificationDiv.id = "osio-provivioning-popup";
 				//notificationDiv.className = "popup-wrapper hide";
-				notificationDiv.style = "display: none; font-family: Helvetica,Arial,sans-serif; position: absolute; width: 400px; height: 200px; z-index: 998; background-color: #fff; border: 1px solid #ddd; border-radius: 5px; box-shadow: 0 2px 8px #aaa; overflow: hidden; box-sizing: unset;";
+				notificationDiv.style = "display: none; font-family: Helvetica,Arial,sans-serif; position: absolute; width: 400px; height: 200px; z-index: 999; background-color: #fff; border: 1px solid #ddd; border-radius: 5px; box-shadow: 0 2px 8px #aaa; overflow: hidden; box-sizing: unset;";
 				notificationDiv.innerHTML = '\
 <div style="height: 100%; box-sizing: unset;"> \
 	<div style="padding: 10px 15px; background-color: #f4f4f4; border-bottom: 1px solid #f0f0f0; height: 30px; box-sizing: unset;"> \
@@ -213,7 +213,7 @@ Please enable popups, before retrying";
     </div>\
 	<div style="padding: 10px 15px; color: #555; background-image: url(https://che.openshift.io/dashboard/assets/branding/loader.svg); background-repeat:  no-repeat;background-position:  center;background-size: 50%;background-origin: padding-box; height:230px; min-height: 70%; opacity: 0.3; box-sizing: unset;">\
 	</div>\
-	<div style="margin-top: -250px; padding: 10px 15px; color: #333; height:80%; min-height: 70%; opacity: 1; z-index: 999; text-align: center; box-sizing: unset;">\
+	<div style="margin-top: -250px; padding: 10px 15px; color: #333; height:80%; min-height: 70%; opacity: 1; text-align: center; box-sizing: unset;">\
 		<p id="osio-provisioning-status" style="font-weight: 500; font-size: larger;">Preparing the user environment</p> \
 	</div> \
 </div>';
@@ -272,7 +272,7 @@ Please enable popups, before retrying";
 		                    document.getElementById("osio-provisioning-status").innerHTML = "To use <strong>che.openshift.io</strong>, you need to create an account on the underlying <strong>Openshift.io</strong> platform.<br/>" +
 		                    		"Please click on the link below. This will open a new tab and request you to login again: be careful to login with the <strong>same user account</strong> you just registered.<br/>" +
 		                    		"When finished, you will be brought back to <strong>che.openshift.io</strong>. If not contact support.<br/>" +
-		                    		"<a href='about:blank' target='osio_provisioning' onclick='provision_osio()'>Create my user on <strong>OpenShift.io</strong></a>";
+		                    		"<a href='about:blank' target='osio_provisioning' onclick='provision_osio()' style='position: relative;'>Create my user on <strong>OpenShift.io</strong></a>";
 		          	  } else {
 		                    document.getElementById("osio-provisioning-status").innerHTML = "Provisioning the user for OpenShift.io";
 		                    setTimeout(function(){
