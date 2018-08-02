@@ -158,10 +158,22 @@ Please enable popups, before retrying";
     }
     
 
-	
-	
+    var scripts = document.getElementsByTagName("script");
+    var originalKeycloakScript;
+    for(var i=0; i<scripts.length;++i) {
+    	if (scripts[i].src && scripts[i].src.endsWith("RhCheKeycloak.js")) {
+    	       originalKeycloakScript = scripts[i].src.replace("RhCheKeycloak.js", "OIDCKeycloak.js");
+    	       console.log("originalKeycloakScript = ", originalKeycloakScript);
+    	       break;
+    	}
+    }
+
+    if (! originalKeycloakScript) {
+    	throw "Cannot find current script named 'RhCheKeycloak.js'";
+    }
+    
     request = new XMLHttpRequest();
-    request.open('GET', 'OIDCKeycloak.js', false);
+    request.open('GET', originalKeycloakScript, false);
     request.send();
 
     source = request.responseText;
