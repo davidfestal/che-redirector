@@ -246,7 +246,7 @@ Please enable popups, before retrying";
 	            	  return setUpNamespaces(keycloak);
 	              })
 	              .then(() => {
-	                  document.getElementById("osio-provisioning-status").innerHTML = "Authenticated";
+	                  document.getElementById("osio-provisioning-status").innerHTML = "User successfully prepared";
 	                  setTimeout(function() {
 //	                	  popup.close();
 	    	              finalPromise.setSuccess(arg);
@@ -258,7 +258,7 @@ Please enable popups, before retrying";
 		        }).error(function(data) {
 		      	  	var keycloak = kc;
 		            popup.open();
-		            if (data && data.status == 403) {
+		            if (data && (data.status == 403 || data.status == 401)) {
 		          	  var lastProvisioningDate = sessionStorage.getItem('osio-provisioning');
 		          	  var isProvisioning = false;
 		          	  if (lastProvisioningDate) {
@@ -269,12 +269,12 @@ Please enable popups, before retrying";
 		                  }
 		          	  }
 		          	  if (!isProvisioning) {
-		                    document.getElementById("osio-provisioning-status").innerHTML = "In order to use <strong>che.openshift.io</strong>, your account should be first created on the underlying <strong>openshift.io</strong> platform.<br/>" +
-		                    		"Please click the link below to confirm your account creation.<br/>A new tab will open and request you to login again. Please login with the <strong>same user account</strong> as you just registered.<br/><br/>" +
-		                    		"As soon as it your user is created, the new tab will close and you will be brought back to <strong>che.openshift.io</strong>. If not please contact support.<br/><br/>" +
-		                    		"<a href='about:blank' target='osio_provisioning' onclick='provision_osio()'>Create my user on OpenShift.io<strong>Openshift</strong></a>";
+		                    document.getElementById("osio-provisioning-status").innerHTML = "To use <strong>che.openshift.io</strong>, you need to create an account on the underlying <strong>Openshift.io</strong> platform.<br/>" +
+		                    		"Please click on the link below. This will open a new tab and request you to login again: be careful to login with the <strong>same user account</strong> you just registered.<br/>" +
+		                    		"When finished, you will be brought back to <strong>che.openshift.io</strong>. If not contact support.<br/>" +
+		                    		"<a href='about:blank' target='osio_provisioning' onclick='provision_osio()'>Create my user on <strong>OpenShift.io</strong></a>";
 		          	  } else {
-		                    document.getElementById("osio-provisioning-status").innerHTML = "Provisioning the user for OpenShift.io in a new tab... click <a href='https://manage.openshift.com/account/index' target='osio_provisioning'>here</a> to follow the registration.";
+		                    document.getElementById("osio-provisioning-status").innerHTML = "Provisioning the user for OpenShift.io";
 		                    setTimeout(function(){
 		                        window.location.reload();
 		                    }, 1000);
