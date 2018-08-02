@@ -31,6 +31,15 @@ Please enable popups, before retrying";
 }
 
 (function( window, undefined ) {
+	var osioURLSuffix;
+	if (window.location.host.includes('-preview')) {
+		osioURLSuffix = 'prod-preview.openshift.io';
+	} else {
+		osioURLSuffix = 'openshift.io';
+	}
+
+	var osioApiURL = 'https://api.' + osioURLSuffix + '/api';
+	var osioAuthURL = 'https://auth.' + osioURLSuffix + '/api';
 
 	function createPromise() {
 		var p = {
@@ -97,7 +106,7 @@ Please enable popups, before retrying";
     
     function performAccounkLinking(keycloak) {
         document.getElementById("osio-provisioning-status").innerHTML = "Getting user cluster";
-        return get("https://api.openshift.io/api/users?filter%5Busername%5D=" + encodeURIComponent(keycloak.tokenParsed.preferred_username), keycloak.token)
+        return get(osioApiURL + "/users?filter%5Busername%5D=" + encodeURIComponent(keycloak.tokenParsed.preferred_username), keycloak.token)
         .then((request) => {
         	data = JSON.parse(request.responseText).data;
         	if (data && data[0]) {
@@ -108,7 +117,7 @@ Please enable popups, before retrying";
         })
         .then((cluster) => {
             document.getElementById("osio-provisioning-status").innerHTML = "Checking account linking";
-        	return get("https://auth.openshift.io/api/token?for=" + encodeURIComponent(cluster), keycloak.token)
+        	return get(osioAuthURL + "/token?for=" + encodeURIComponent(cluster), keycloak.token)
         	.catch((request) => {
         		json = JSON.parse(request.responseText);
         		if (request.status == 401 &&
@@ -116,7 +125,7 @@ Please enable popups, before retrying";
         				json.errors &&
         				json.errors[0] &&
         				json.errors[0].detail == "token is missing") {
-                    return get("https://auth.openshift.io/api/token/link?for=" + encodeURIComponent(cluster) + "&redirect=" + encodeURIComponent(window.location), keycloak.token)
+                    return get(osioAuthURL + "/token/link?for=" + encodeURIComponent(cluster) + "&redirect=" + encodeURIComponent(window.location), keycloak.token)
                     .then((request) => {
                         var json = JSON.parse(request.responseText);
                         if (json && json.redirect_location) {
@@ -136,13 +145,13 @@ Please enable popups, before retrying";
     function setUpNamespaces(keycloak) {
         document.getElementById("osio-provisioning-status").innerHTML = "Setting up namespaces";
         
-        return get("https://api.openshift.io/api/user", keycloak.token)
+        return get(osioApiURL + "/user", keycloak.token)
         .then((request) => checkNamespacesCreated(keycloak, new Date().getTime() + 30000));
     }
 
     function checkNamespacesCreated(keycloak, timeLimit) {
         document.getElementById("osio-provisioning-status").innerHTML = "Checking namespaces";
-        return get("https://api.openshift.io/api/user/services", keycloak.token)
+        return get(osioApiURL + "/user/services", keycloak.token)
         .catch((error) => {
         	console.log("Error while checking namespaces: ", error);
             if (new Date().getTime() < timeLimit) {
@@ -195,16 +204,19 @@ Please enable popups, before retrying";
 				var notificationDiv = document.createElement('div');
 				notificationDiv.id = "osio-provivioning-popup";
 				//notificationDiv.className = "popup-wrapper hide";
-				notificationDiv.style = "display: none; font-family: Helvetica,Arial,sans-serif; position: absolute; width: 400px; height: 200px; z-index: 999; background-color: #fff; border: 1px solid #ddd; border-radius: 5px; box-shadow: 0 2px 8px #aaa; overflow: hidden;";
-				notificationDiv.innerHTML = '<div> \
-				<div style="padding: 10px 15px; background-color: #f4f4f4; border-bottom: 1px solid #f0f0f0;"> \
-				<button type="button" class="osio-provisioning-popup-close" style="float: right; margin-top: 2px; padding: 0; font-size: 24px; line-height: 1; border: 0; background: transparent; color: #aaa; cursor: pointer;">×</button>\
-				<h3 style="margin: 0; line-height: 1.5em; color: #333;">Please wait...</h3> \
-				</div> \
-				<div style="padding: 10px 15px; color: #555;"> \
-				<p stype = "text-align: center;" id="osio-provisioning-status">Preparing the user environment</p> \
-				</div> \
-				</div>';
+				notificationDiv.style = "display: none; font-family: Helvetica,Arial,sans-serif; position: absolute; width: 400px; height: 200px; z-index: 998; background-color: #fff; border: 1px solid #ddd; border-radius: 5px; box-shadow: 0 2px 8px #aaa; overflow: hidden;";
+				notificationDiv.innerHTML = '\
+<div style="height: 100%"> \
+	<div style="padding: 10px 15px; background-color: #f4f4f4; border-bottom: 1px solid #f0f0f0; height: 30px;"> \
+		<button type="button" class="osio-provisioning-popup-close" style="float: right; margin-top: 2px; padding: 0; font-size: 24px; line-height: 1; border: 0; background: transparent; color: #aaa; cursor: pointer;">×</button>\
+		<h3 style="margin: 0; line-height: 1.5em; color: #333;">User setup</h3> \
+    </div>\
+	<div style="padding: 10px 15px; color: #555; background-image: url(https://che.openshift.io/dashboard/assets/branding/loader.svg); background-repeat:  no-repeat;background-position:  center;background-size: 50%;background-origin: padding-box; height:230px; min-height: 70%; opacity: 0.3;">\
+	</div>\
+	<div style="margin-top: -260px; padding: 10px 15px; color: #333; height:80%; min-height: 70%; opacity: 1; z-index: 999; text-align: center;">\
+		<p id="osio-provisioning-status" style="font-weight: 500;">Preparing the user environment</p> \
+	</div> \
+</div>';
 				document.body.appendChild(notificationDiv);
 
 				var popupOpts = {
@@ -214,7 +226,7 @@ Please enable popups, before retrying";
 				};
 
 				var popup;
-				if ($ && $.fn && $.fn.popup) {
+				if (typeof($) !== 'undefined' && $.fn && $.fn.popup) {
 					popup = $("#osio-provivioning-popup").popup(popupOpts);
 				} else {
 				    // As a native plugin
@@ -259,7 +271,7 @@ Please enable popups, before retrying";
 		          	  }
 		          	  if (!isProvisioning) {
 		                    document.getElementById("osio-provisioning-status").innerHTML = "In order to use <strong>che.openshift.io</strong>, your account should be first created on the underlying <strong>openshift.io</strong> platform.<br/>" +
-		                    		"Please click the link below to confirm your account creation.<br/>A new tab will open and request you to login again. Please login with the same user account as you just registered.<br/><br/>" +
+		                    		"Please click the link below to confirm your account creation.<br/>A new tab will open and request you to login again. Please login with the <strong>same user account</strong> as you just registered.<br/><br/>" +
 		                    		"As soon as it your user is created, the new tab will close and you will be brought back to <strong>che.openshift.io</strong>. If not please contact support.<br/><br/>" +
 		                    		"<a href='about:blank' target='osio_provisioning' onclick='provision_osio()'>Create my user on OpenShift.io<strong>Openshift</strong></a>";
 		          	  } else {
