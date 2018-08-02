@@ -193,7 +193,7 @@ Please enable popups, before retrying";
 
             script.onload = function() {
 				var notificationDiv = document.createElement('div');
-				notificationDiv.id = "popup";
+				notificationDiv.id = "osio-provivioning-popup";
 				//notificationDiv.className = "popup-wrapper hide";
 				notificationDiv.style = "display: none; font-family: Helvetica,Arial,sans-serif; position: absolute; width: 400px; height: 200px; z-index: 999; background-color: #fff; border: 1px solid #ddd; border-radius: 5px; box-shadow: 0 2px 8px #aaa; overflow: hidden;";
 				notificationDiv.innerHTML = '<div> \
@@ -206,12 +206,20 @@ Please enable popups, before retrying";
 				</div> \
 				</div>';
 				document.body.appendChild(notificationDiv);
-				// As a native plugin
-				var popup = new Popup(notificationDiv, {
+
+				var popupOpts = {
 				    width: 400,
 				    height: 300,
 				    closeBtnClass: 'osio-provisioning-popup-close'
-				});
+				};
+
+				var popup;
+				if ($ && $.fn && $.fn.popup) {
+					popup = $("#osio-provivioning-popup").popup(popupOpts);
+				} else {
+				    // As a native plugin
+				    popup = new Popup(notificationDiv, popupOpts);
+				}
 				
 				var promise = originalInit(initOptions);
 	            promise.success(function(arg) {
