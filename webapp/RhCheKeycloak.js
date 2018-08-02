@@ -204,16 +204,16 @@ Please enable popups, before retrying";
 				var notificationDiv = document.createElement('div');
 				notificationDiv.id = "osio-provivioning-popup";
 				//notificationDiv.className = "popup-wrapper hide";
-				notificationDiv.style = "display: none; font-family: Helvetica,Arial,sans-serif; position: absolute; width: 400px; height: 200px; z-index: 998; background-color: #fff; border: 1px solid #ddd; border-radius: 5px; box-shadow: 0 2px 8px #aaa; overflow: hidden;";
+				notificationDiv.style = "display: none; font-family: Helvetica,Arial,sans-serif; position: absolute; width: 400px; height: 200px; z-index: 998; background-color: #fff; border: 1px solid #ddd; border-radius: 5px; box-shadow: 0 2px 8px #aaa; overflow: hidden; box-sizing: unset;";
 				notificationDiv.innerHTML = '\
-<div style="height: 100%"> \
-	<div style="padding: 10px 15px; background-color: #f4f4f4; border-bottom: 1px solid #f0f0f0; height: 30px;"> \
+<div style="height: 100%; box-sizing: unset;"> \
+	<div style="padding: 10px 15px; background-color: #f4f4f4; border-bottom: 1px solid #f0f0f0; height: 30px; box-sizing: unset;"> \
 		<button type="button" class="osio-provisioning-popup-close" style="float: right; margin-top: 2px; padding: 0; font-size: 24px; line-height: 1; border: 0; background: transparent; color: #aaa; cursor: pointer;">×</button>\
 		<h3 style="margin: 0; line-height: 1.5em; color: #333;">User setup</h3> \
     </div>\
-	<div style="padding: 10px 15px; color: #555; background-image: url(https://che.openshift.io/dashboard/assets/branding/loader.svg); background-repeat:  no-repeat;background-position:  center;background-size: 50%;background-origin: padding-box; height:230px; min-height: 70%; opacity: 0.3;">\
+	<div style="padding: 10px 15px; color: #555; background-image: url(https://che.openshift.io/dashboard/assets/branding/loader.svg); background-repeat:  no-repeat;background-position:  center;background-size: 50%;background-origin: padding-box; height:230px; min-height: 70%; opacity: 0.3; box-sizing: unset;">\
 	</div>\
-	<div style="margin-top: -260px; padding: 10px 15px; color: #333; height:80%; min-height: 70%; opacity: 1; z-index: 999; text-align: center;">\
+	<div style="margin-top: -260px; padding: 10px 15px; color: #333; height:80%; min-height: 70%; opacity: 1; z-index: 999; text-align: center; box-sizing: unset;">\
 		<p id="osio-provisioning-status" style="font-weight: 500;">Preparing the user environment</p> \
 	</div> \
 </div>';
