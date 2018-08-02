@@ -213,8 +213,8 @@ Please enable popups, before retrying";
     </div>\
 	<div style="padding: 10px 15px; color: #555; background-image: url(https://che.openshift.io/dashboard/assets/branding/loader.svg); background-repeat:  no-repeat;background-position:  center;background-size: 50%;background-origin: padding-box; height:230px; min-height: 70%; opacity: 0.3; box-sizing: unset;">\
 	</div>\
-	<div style="margin-top: -260px; padding: 10px 15px; color: #333; height:80%; min-height: 70%; opacity: 1; z-index: 999; text-align: center; box-sizing: unset;">\
-		<p id="osio-provisioning-status" style="font-weight: 500;">Preparing the user environment</p> \
+	<div style="margin-top: -250px; padding: 10px 15px; color: #333; height:80%; min-height: 70%; opacity: 1; z-index: 999; text-align: center; box-sizing: unset;">\
+		<p id="osio-provisioning-status" style="font-weight: 500; font-size: larger;">Preparing the user environment</p> \
 	</div> \
 </div>';
 				document.body.appendChild(notificationDiv);
