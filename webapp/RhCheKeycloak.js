@@ -247,9 +247,8 @@ Please enable popups, before retrying";
 	              })
 	              .then(() => {
 	                  document.getElementById("osio-provisioning-status").innerHTML = "Authenticated";
-	                  document.getElementById("query").innerHTML = window.location;
 	                  setTimeout(function() {
-	                	  popup.close();
+//	                	  popup.close();
 	    	              finalPromise.setSuccess(arg);
 	                  }, 1000);
 	              })
