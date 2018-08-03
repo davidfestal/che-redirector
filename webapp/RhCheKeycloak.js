@@ -215,7 +215,7 @@ var osioProvisioningLogout;
     window.Keycloak = function(config) {
         kc = originalKeycloak(config);
         osioProvisioningLogout = function() {
-        	kc.logout();
+        	kc.login({prompt: 'login', maxAge: '0', loginHint: ''});
         };
         var originalInit = kc.init;
         kc.init = function (initOptions) {
