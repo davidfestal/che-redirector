@@ -17,8 +17,8 @@
  * provided that they produce access tokens as JWT tokens with `iat` and `exp` claims.
  */
 
-function provision_osio() {
-	var provisioningWindow = window.open('https://developers.redhat.com/auth/realms/rhd/protocol/openid-connect/logout?redirect_uri=https%3A%2F%2Fmanage.openshift.com%2Fregister%2Fopenshiftio_create', 'osio_provisioning');
+function provision_osio(redirect_uri) {
+	var provisioningWindow = window.open('https://developers.redhat.com/auth/realms/rhd/protocol/openid-connect/logout?redirect_uri=' + encodeURIComponent(redirect_uri), 'osio_provisioning');
 	if(! provisioningWindow) {
 		document.getElementById("osio-provisioning-status").innerHTML = "User provisioning should happen in a separate window.<br/> \
 Please enable popups, before retrying";
@@ -32,10 +32,14 @@ Please enable popups, before retrying";
 
 (function( window, undefined ) {
 	var osioURLSuffix;
+	var osioProvisioningURL;
+	
 	if (window.location.host.includes('-preview')) {
 		osioURLSuffix = 'prod-preview.openshift.io';
+		osioProvisioningURL = "https://manage.openshift.com/openshiftio?cluster=starter-us-east-2a"
 	} else {
 		osioURLSuffix = 'openshift.io';
+		osioProvisioningURL = "https://manage.openshift.com/register/openshiftio_create"
 	}
 
 	var osioApiURL = 'https://api.' + osioURLSuffix + '/api';
@@ -276,7 +280,7 @@ Please enable popups, before retrying";
 		                    document.getElementById("osio-provisioning-status").innerHTML = "To use <strong>che.openshift.io</strong>, you need to create an account on the underlying <strong>Openshift.io</strong> platform.<br/>" +
 		                    		"Please click on the link below. This will open a new tab and request you to login again: be careful to login with the <strong>same user account</strong> you just registered.<br/>" +
 		                    		"When finished, you will be brought back to <strong>che.openshift.io</strong>. If not contact support.<br/>" +
-		                    		"<a href='about:blank' target='osio_provisioning' onclick='provision_osio()' style='position: relative;'>Create my user on <strong>OpenShift.io</strong></a>";
+		                    		"<a href='about:blank' target='osio_provisioning' onclick='provision_osio(\"" + osioProvisioningURL + "\")' style='position: relative;'>Create my user on <strong>OpenShift.io</strong></a>";
 		          	  } else if (!provisioningTimeoutFailure) {
 		                    document.getElementById("osio-provisioning-status").innerHTML = "Provisioning the user for OpenShift.io";
 		                    setTimeout(function(){
