@@ -197,7 +197,7 @@ var osioProvisioningLogout;
                 	}
                 } 
                 
-        	} catch() {
+        	} catch(err) {
         	}
     }
     
