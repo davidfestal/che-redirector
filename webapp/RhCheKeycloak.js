@@ -179,11 +179,11 @@ var osioProvisioningLogout;
     
     function userNeedsApproval(data) {
         if (data && (data.status == 403 || data.status == 401)) {
-            json = JSON.parse(data.responseText);
+            json = JSON.parse(data.response);
             if (json &&
                 json.errors &&
                 json.errors[0] &&
-                json.error[0].code == "unauthorized_error" &&
+                json.errors[0].code == "unauthorized_error" &&
                 json.errors[0].detail.endsWith("' is not approved")) {
                 return json.errors[0].detail.replace("' is not approved", "")
                 .replace("user '", "");
