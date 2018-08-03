@@ -36,7 +36,7 @@ var osioProvisioningLogout;
     var osioURLSuffix;
     var osioProvisioningURL;
     
-    if (window.location.host.includes('-preview')) {
+    if (window.location.host.includes('prod-preview')) {
         osioURLSuffix = 'prod-preview.openshift.io';
         osioProvisioningURL = "https://manage.openshift.com/openshiftio?cluster=starter-us-east-2a"
     } else {
@@ -215,7 +215,8 @@ var osioProvisioningLogout;
     window.Keycloak = function(config) {
         kc = originalKeycloak(config);
         osioProvisioningLogout = function() {
-        	kc.login({prompt: 'login', maxAge: '0', loginHint: ''});
+            var url = "https://api.prod-preview.openshift.io/api/logout?redirect=https%3A%2F%2Fapi.prod-preview.openshift.io%2Fapi%2Flogin%2Fauthorize%3Fredirect%3D" + encodeURIComponent(encodeURIComponent(window.location.href));
+            window.location.href = url;
         };
         var originalInit = kc.init;
         kc.init = function (initOptions) {
@@ -311,7 +312,7 @@ var osioProvisioningLogout;
                         } else {
                           if (!isProvisioning) {
                                 document.getElementById("osio-provisioning-status").innerHTML = "To have access to <strong>che.openshift.io</strong>, user <strong>" + userToBeApproved + "</strong> must be enabled on the underlying <strong>Openshift.io</strong> platform.<br/>" +
-                                        "Please click on the link below. This will open a new tab and request you to login again with user  be careful to login with the <strong>" + userToBeApproved + "</strong> user.<br/>" +
+                                        "Please click on the link below. This will open a new tab and request you to login again with user. Be careful to login with yur <strong>" + userToBeApproved + "</strong> user.<br/>" +
                                         "When finished, you will be brought back to <strong>che.openshift.io</strong>. If not contact support.<br/>" +
                                         "<a href='about:blank' target='osio_provisioning' onclick='provision_osio(\"" + osioProvisioningURL + "\")' style='position: relative;'>Enable user <strong>" + userToBeApproved + "</strong> on <strong>OpenShift.io</strong></a>" +
                                         "<br/>" +
