@@ -179,7 +179,7 @@ var osioProvisioningLogout;
     
     function userNeedsApproval(data) {
         if (data && (data.status == 403 || data.status == 401)) {
-            json = JSON.parse(request.responseText);
+            json = JSON.parse(data.responseText);
             if (json &&
                 json.errors &&
                 json.errors[0] &&
