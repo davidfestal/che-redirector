@@ -109,13 +109,13 @@ Please enable popups, before retrying";
     }
     
     function performAccounkLinking(keycloak) {
-        document.getElementById("osio-provisioning-status").innerHTML = "Getting user cluster";
         return get(osioApiURL + "/users?filter%5Busername%5D=" + encodeURIComponent(keycloak.tokenParsed.preferred_username), keycloak.token)
         .then((request) => {
         	data = JSON.parse(request.responseText).data;
         	if (data && data[0]) {
         		return data[0].attributes.cluster;
         	} else {
+			    sessionStorage.removeItem('osio-provisioning-popup-message');
         		return Promise.reject("cannot find cluster for user: " + keycloak.tokenParsed.preferred_username)
         	}
         })
@@ -133,13 +133,17 @@ Please enable popups, before retrying";
                     .then((request) => {
                         var json = JSON.parse(request.responseText);
                         if (json && json.redirect_location) {
+            			    sessionStorage.setItem('osio-provisioning-popup-message', "Performing account linking");
                             window.location.replace(json.redirect_location);
                         } else {
+                    	    sessionStorage.removeItem('osio-provisioning-popup-message');
                             return Promise.reject("Cannot get account linking page for user: " + keycloak.tokenParsed.preferred_username)
                         }
                     });
         		} else {
-                    console.log("Error while testing linked account", request);
+                    console.log("Error while checking account linking", request);
+                    document.getElementById("osio-provisioning-status").innerHTML = "Error while checking account linking";
+            	    sessionStorage.removeItem('osio-provisioning-popup-message');
         			return Promise.reject(request);
         		}
         	});
@@ -147,6 +151,7 @@ Please enable popups, before retrying";
     }
     
     function setUpNamespaces(keycloak) {
+	    sessionStorage.removeItem('osio-provisioning-popup-message');
         document.getElementById("osio-provisioning-status").innerHTML = "Setting up namespaces";
         
         return get(osioApiURL + "/user", keycloak.token)
@@ -170,7 +175,6 @@ Please enable popups, before retrying";
         });
     }
     
-
     var scripts = document.getElementsByTagName("script");
     var originalKeycloakScript;
     for(var i=0; i<scripts.length;++i) {
@@ -236,12 +240,17 @@ Please enable popups, before retrying";
 				    // As a native plugin
 				    popup = new Popup(notificationDiv, popupOpts);
 				}
+
+				
+	          	  var lastOSIOPopupMessage = sessionStorage.getItem('osio-provisioning-popup-message');
+	          	  if (lastOSIOPopupMessage) {
+					  document.getElementById("osio-provisioning-status").innerHTML = lastOSIOPopupMessage;
+	          		  popup.open();
+	          	  }
 				
 				var promise = originalInit(initOptions);
 	            promise.success(function(arg) {
 	          	  var keycloak = kc;
-	          	  popup.open();
-	              document.getElementById("osio-provisioning-status").innerHTML = "User provisioned user for Openshift.io";
 	              sessionStorage.removeItem('osio-provisioning');
 	              var w = window.open('', 'osio_provisioning');
 	              w && w.close();
@@ -252,7 +261,7 @@ Please enable popups, before retrying";
 	              .then(() => {
 	                  document.getElementById("osio-provisioning-status").innerHTML = "User successfully prepared";
 	                  setTimeout(function() {
-//	                	  popup.close();
+	                	  popup.close();
 	    	              finalPromise.setSuccess(arg);
 	                  }, 1000);
 	              })
@@ -270,28 +279,36 @@ Please enable popups, before retrying";
 		          		if (new Date().getTime() < parseInt(lastProvisioningDate) + 30000) {
 		                      isProvisioning = true;
 		                  } else {
-		                      sessionStorage.removeItem('osio-provisioning');
-		                      document.getElementById("osio-provisioning-status").innerHTML = "Error during the creation of the <strong>OpenShift.io</strong> account.<br/>Please contact the support.";
-		                	  finalPromise.setError(data);
 		          	  		  provisioningTimeoutFailure = true;
 		                  }
 		          	  }
-		          	  if (!isProvisioning) {
-		                    document.getElementById("osio-provisioning-status").innerHTML = "To use <strong>che.openshift.io</strong>, you need to create an account on the underlying <strong>Openshift.io</strong> platform.<br/>" +
-		                    		"Please click on the link below. This will open a new tab and request you to login again: be careful to login with the <strong>same user account</strong> you just registered.<br/>" +
-		                    		"When finished, you will be brought back to <strong>che.openshift.io</strong>. If not contact support.<br/>" +
-		                    		"<a href='about:blank' target='osio_provisioning' onclick='provision_osio(\"" + osioProvisioningURL + "\")' style='position: relative;'>Create my user on <strong>OpenShift.io</strong></a>";
-		          	  } else if (!provisioningTimeoutFailure) {
-		                    document.getElementById("osio-provisioning-status").innerHTML = "Provisioning the user for OpenShift.io";
-		                    setTimeout(function(){
-		                        window.location.reload();
-		                    }, 1000);
+		          	  
+		          	  if (provisioningTimeoutFailure) {
+	                      sessionStorage.removeItem('osio-provisioning');
+	  		          	  sessionStorage.removeItem('osio-provisioning-popup-message')		          	  
+	                      document.getElementById("osio-provisioning-status").innerHTML = "Error during the creation of the <strong>OpenShift.io</strong> account.<br/>Please contact the support.";
+	                	  finalPromise.setError(data);
+		          	  } else {
+						  if (!isProvisioning) {
+								document.getElementById("osio-provisioning-status").innerHTML = "To use <strong>che.openshift.io</strong>, you need to create an account on the underlying <strong>Openshift.io</strong> platform.<br/>" +
+										"Please click on the link below. This will open a new tab and request you to login again: be careful to login with the <strong>same user account</strong> you just registered.<br/>" +
+										"When finished, you will be brought back to <strong>che.openshift.io</strong>. If not contact support.<br/>" +
+										"<a href='about:blank' target='osio_provisioning' onclick='provision_osio(\"" + osioProvisioningURL + "\")' style='position: relative;'>Create my user on <strong>OpenShift.io</strong></a>";
+						  } else {
+		  		          	    var message = "Provisioning the user for <strong>OpenShift.io</strong>";
+							    sessionStorage.setItem('osio-provisioning-popup-message', message);
+								document.getElementById("osio-provisioning-status").innerHTML = message;
+								setTimeout(function(){
+									window.location.reload();
+								}, 1000);
+						  }
 		          	  }
 		            } else {
 		                document.getElementById("osio-provisioning-status").innerHTML = "Error during authentication";
 		                var w = window.open('', 'osio_provisioning');
 		                w && w.close();
 		                sessionStorage.removeItem('osio-provisioning');
+	  		          	sessionStorage.removeItem('osio-provisioning-popup-message')		          	  
 		                finalPromise.setError(data);
 		            }
 		        });
