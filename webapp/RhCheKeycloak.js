@@ -30,6 +30,8 @@ Please enable popups, before retrying";
 	}
 }
 
+var osioProvisioningLogout;
+
 (function( window, undefined ) {
 	var osioURLSuffix;
 	var osioProvisioningURL;
@@ -175,6 +177,20 @@ Please enable popups, before retrying";
         });
     }
     
+    function userNeedsApproval(data) {
+    	if (data && (data.status == 403 || data.status == 401)) {
+    		json = JSON.parse(request.responseText);
+    		if (json &&
+    			json.errors &&
+    			json.errors[0] &&
+    			json.error[0].code == "unauthorized_error" &&
+    			json.errors[0].detail.endsWith("' is not approved")) {
+    			return json.errors[0].detail.replace("' is not approved", "")
+    			.replace("user '", "");
+    		}
+    	}
+    }
+    
     var scripts = document.getElementsByTagName("script");
     var originalKeycloakScript;
     for(var i=0; i<scripts.length;++i) {
@@ -198,6 +214,7 @@ Please enable popups, before retrying";
 	var originalKeycloak = window.Keycloak;
 	window.Keycloak = function(config) {
 		kc = originalKeycloak(config);
+		osioProvisioningLogout = kc.logout();
 		var originalInit = kc.init;
 		kc.init = function (initOptions) {
             var finalPromise = createPromise();
@@ -271,7 +288,8 @@ Please enable popups, before retrying";
 		        }).error(function(data) {
 		      	  	var keycloak = kc;
 		            popup.open();
-		            if (data && (data.status == 403 || data.status == 401)) {
+		            if (data && (data.status == 403 || data.status == 401) && userNeedsApproval(data)) {
+		              var userToBeApproved = userNeedsApproval(data);
 		          	  var lastProvisioningDate = sessionStorage.getItem('osio-provisioning');
 		          	  var isProvisioning = false;
 		          	  var provisioningTimeoutFailure = false;
@@ -290,10 +308,12 @@ Please enable popups, before retrying";
 	                	  finalPromise.setError(data);
 		          	  } else {
 						  if (!isProvisioning) {
-								document.getElementById("osio-provisioning-status").innerHTML = "To use <strong>che.openshift.io</strong>, you need to create an account on the underlying <strong>Openshift.io</strong> platform.<br/>" +
-										"Please click on the link below. This will open a new tab and request you to login again: be careful to login with the <strong>same user account</strong> you just registered.<br/>" +
+								document.getElementById("osio-provisioning-status").innerHTML = "To have access to <strong>che.openshift.io</strong>, user <strong>" + userToBeApproved + "</strong> must be enabled on the underlying <strong>Openshift.io</strong> platform.<br/>" +
+										"Please click on the link below. This will open a new tab and request you to login again with user  be careful to login with the <strong>" + userToBeApproved + "</strong> user.<br/>" +
 										"When finished, you will be brought back to <strong>che.openshift.io</strong>. If not contact support.<br/>" +
-										"<a href='about:blank' target='osio_provisioning' onclick='provision_osio(\"" + osioProvisioningURL + "\")' style='position: relative;'>Create my user on <strong>OpenShift.io</strong></a>";
+										"<a href='about:blank' target='osio_provisioning' onclick='provision_osio(\"" + osioProvisioningURL + "\")' style='position: relative;'>Enable user <strong>" + userToBeApproved + "</strong> on <strong>OpenShift.io</strong></a>" +
+										"<br/>" +
+										"<a href='' onclick='osioProvisioningLogout()' style='position: relative;'>Use a different user</a>" +
 						  } else {
 		  		          	    var message = "Provisioning the user for <strong>OpenShift.io</strong>";
 							    sessionStorage.setItem('osio-provisioning-popup-message', message);
