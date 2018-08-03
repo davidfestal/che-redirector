@@ -313,7 +313,7 @@ var osioProvisioningLogout;
 										"When finished, you will be brought back to <strong>che.openshift.io</strong>. If not contact support.<br/>" +
 										"<a href='about:blank' target='osio_provisioning' onclick='provision_osio(\"" + osioProvisioningURL + "\")' style='position: relative;'>Enable user <strong>" + userToBeApproved + "</strong> on <strong>OpenShift.io</strong></a>" +
 										"<br/>" +
-										"<a href='' onclick='osioProvisioningLogout()' style='position: relative;'>Use a different user</a>" +
+										"<a href='' onclick='osioProvisioningLogout()' style='position: relative;'>Use a different user</a>";
 						  } else {
 		  		          	    var message = "Provisioning the user for <strong>OpenShift.io</strong>";
 							    sessionStorage.setItem('osio-provisioning-popup-message', message);
