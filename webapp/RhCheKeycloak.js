@@ -261,11 +261,15 @@ Please enable popups, before retrying";
 		            if (data && (data.status == 403 || data.status == 401)) {
 		          	  var lastProvisioningDate = sessionStorage.getItem('osio-provisioning');
 		          	  var isProvisioning = false;
+		          	  var provisioningTimeoutFailure = false;
 		          	  if (lastProvisioningDate) {
-		          		if (parseInt(lastProvisioningDate) < new Date().getTime() + 30000) {
+		          		if (new Date().getTime() < parseInt(lastProvisioningDate) + 30000) {
 		                      isProvisioning = true;
 		                  } else {
 		                      sessionStorage.removeItem('osio-provisioning');
+		                      document.getElementById("osio-provisioning-status").innerHTML = "Error during the creation of the <strong>OpenShift.io</strong> account.<br/>Please contact the support.";
+		                	  finalPromise.setError(data);
+		          	  		  provisioningTimeoutFailure = true;
 		                  }
 		          	  }
 		          	  if (!isProvisioning) {
@@ -273,7 +277,7 @@ Please enable popups, before retrying";
 		                    		"Please click on the link below. This will open a new tab and request you to login again: be careful to login with the <strong>same user account</strong> you just registered.<br/>" +
 		                    		"When finished, you will be brought back to <strong>che.openshift.io</strong>. If not contact support.<br/>" +
 		                    		"<a href='about:blank' target='osio_provisioning' onclick='provision_osio()' style='position: relative;'>Create my user on <strong>OpenShift.io</strong></a>";
-		          	  } else {
+		          	  } else if (!provisioningTimeoutFailure) {
 		                    document.getElementById("osio-provisioning-status").innerHTML = "Provisioning the user for OpenShift.io";
 		                    setTimeout(function(){
 		                        window.location.reload();
