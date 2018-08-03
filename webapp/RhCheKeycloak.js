@@ -179,16 +179,26 @@ var osioProvisioningLogout;
     
     function userNeedsApproval(data) {
         if (data && (data.status == 403 || data.status == 401)) {
-            json = JSON.parse(data.response);
-            if (json &&
-                json.errors &&
-                json.errors[0] &&
-                json.errors[0].code == "unauthorized_error" &&
-                json.errors[0].detail.endsWith("' is not approved")) {
-                return json.errors[0].detail.replace("' is not approved", "")
-                .replace("user '", "");
-            }
-        }
+        	try {
+                json = JSON.parse(data.response);
+                if (json &&
+                        json.errors &&
+                        json.errors[0]) {                	
+                	var error = json.errors[0];
+                	
+                	if(error.code == "unauthorized_error" &&
+                            json.errors[0].detail.endsWith("' is not approved")) {
+                            return json.errors[0].detail.replace("' is not approved", "")
+                            .replace("user '", "");
+                	}
+                	if(error.code == "forbidden_error" &&
+                            json.errors[0].detail.equals("user is not authorized to access OpenShift")) {
+                            return "unknown";
+                	}
+                } 
+                
+        	} catch() {
+        	}
     }
     
     var scripts = document.getElementsByTagName("script");
