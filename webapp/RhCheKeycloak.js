@@ -206,10 +206,13 @@ var osioUser;
     
     var scripts = document.getElementsByTagName("script");
     var originalKeycloakScript;
+    var provisioningPage;
     for(var i=0; i<scripts.length;++i) {
         if (scripts[i].src && scripts[i].src.endsWith("RhCheKeycloak.js")) {
                originalKeycloakScript = scripts[i].src.replace("RhCheKeycloak.js", "OIDCKeycloak.js");
+               provisioningPage = scripts[i].src.replace("RhCheKeycloak.js", "provision.html");
                console.log("originalKeycloakScript = ", originalKeycloakScript);
+               console.log("OSIO provisioning page = ", provisioningPage);
                break;
         }
     }
@@ -238,7 +241,7 @@ var osioUser;
             var provisioningMessageDiv = document.createElement('div');
             provisioningMessageDiv.id = "osio-provisioning-frame";
             provisioningMessageDiv.style = "display: none; height: 100%; z-index: 999; position:fixed; padding:0; margin:0; top:0; left:0; width: 100%; height: 100%; background:rgba(255,255,255,1);";
-            provisioningMessageDiv.innerHTML = '<iframe style="border: 0px; width: 100%; height: 100%" src="provision.html"></iframe>';
+            provisioningMessageDiv.innerHTML = '<iframe style="border: 0px; width: 100%; height: 100%" src="' + provisioningPage +  '"></iframe>';
             document.body.appendChild(provisioningMessageDiv);
             
             if (document.getElementsByClassName('ide-page-loader-content').length > 0) {
