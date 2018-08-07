@@ -17,12 +17,18 @@
  * provided that they produce access tokens as JWT tokens with `iat` and `exp` claims.
  */
 
+const osio_msg_provisioning = "Provisioning the user for <strong>OpenShift.io</strong>";
+const osio_msg_checking_availability = "Checking Eclipse Che availability for the user";
+const osio_msg_linking account = "Linking your OpenShift account";
+const osio_msg_setting_up_namespaces = "Setting up namespaces";
+
 function provision_osio(redirect_uri) {
     var provisioningWindow = window.open('https://developers.redhat.com/auth/realms/rhd/protocol/openid-connect/logout?redirect_uri=' + encodeURIComponent(redirect_uri), 'osio_provisioning');
     if(! provisioningWindow) {
     	setStatusMessage("User provisioning should happen in a separate window.<br/> \
 Please enable popups, before retrying");
     } else {
+    	sessionStorage.setItem('osio-provisioning-notification-message', osio_msg_provisioning);
         sessionStorage.setItem('osio-provisioning', new Date().getTime());
         window.blur();
         window.focus();
@@ -118,14 +124,16 @@ var osioUser;
             if (data && data[0]) {
                 return data[0].attributes.cluster;
             } else {
-                sessionStorage.removeItem('osio-provisioning-popup-message');
+                sessionStorage.removeItem('osio-provisioning-notification-message');
                 return Promise.reject("cannot find cluster for user: " + keycloak.tokenParsed.preferred_username)
             }
         })
         .then((cluster) => {
-        	setStatusMessage("Checking account linking");
             return get(osioAuthURL + "/token?for=" + encodeURIComponent(cluster), keycloak.token)
-            .catch((request) => {
+            .then((request) => {
+                sessionStorage.removeItem('osio-provisioning-notification-message');
+            	return request;
+            },(request) => {
                 json = JSON.parse(request.responseText);
                 if (request.status == 401 &&
                         json &&
@@ -136,17 +144,17 @@ var osioUser;
                     .then((request) => {
                         var json = JSON.parse(request.responseText);
                         if (json && json.redirect_location) {
-                            sessionStorage.setItem('osio-provisioning-popup-message', "Performing account linking");
+                            sessionStorage.setItem('osio-provisioning-notification-message', osio_msg_linking account);
                             window.location.replace(json.redirect_location);
                         } else {
-                            sessionStorage.removeItem('osio-provisioning-popup-message');
+                            sessionStorage.removeItem('osio-provisioning-notification-message');
                             return Promise.reject("Cannot get account linking page for user: " + keycloak.tokenParsed.preferred_username)
                         }
                     });
                 } else {
                     console.log("Error while checking account linking", request);
                     setStatusMessage("Error while checking account linking");
-                    sessionStorage.removeItem('osio-provisioning-popup-message');
+                    sessionStorage.removeItem('osio-provisioning-notification-message');
                     return Promise.reject(request);
                 }
             });
@@ -154,18 +162,20 @@ var osioUser;
     }
     
     function setUpNamespaces(keycloak) {
-        sessionStorage.removeItem('osio-provisioning-popup-message');
-        setStatusMessage("Setting up namespaces");
+        return get(osioApiURL + "/user/services", keycloak.token)
+        .error(function (error) {
+            sessionStorage.removeItem('osio-provisioning-notification-message');
+            setStatusMessage(osio_msg_setting_up_namespaces);
+            return get(osioApiURL + "/user", keycloak.token)
+            .then((request) => checkNamespacesCreated(keycloak, new Date().getTime() + 30000));
+        }):
         
-        return get(osioApiURL + "/user", keycloak.token)
-        .then((request) => checkNamespacesCreated(keycloak, new Date().getTime() + 30000));
     }
 
     function checkNamespacesCreated(keycloak, timeLimit) {
-    	setStatusMessage("Checking namespaces");
+        setStatusMessage(osio_msg_setting_up_namespaces);
         return get(osioApiURL + "/user/services", keycloak.token)
         .catch((error) => {
-            console.log("Error while checking namespaces: ", error);
             if (new Date().getTime() < timeLimit) {
                 return new Promise((resolve, reject) => {
                     setTimeout(function(){
@@ -251,16 +261,21 @@ var osioUser;
                 	<p id="osio-provisioning-status" style="position: relative; top: 50%; margin-top: 60px; font-weight: 500; font-size: larger; color: #bbb;"></p>';
                 pageLoaderDiv.appendChild(statusDiv);
                 setStatusMessage = function(message) {
-                	document.getElementById("osio-provisioning-status").innerHTML = message;
+                    var messageToWrite;
+                    lastOSIONotificationMessage = sessionStorage.getItem('osio-provisioning-notification-message');
+                    if (lastOSIONotificationMessage) {
+                    	messageToWrite = lastOSIONotificationMessage;
+                    } else {
+                    	messageToWrite = message;
+                    }
+
+                	document.getElementById("osio-provisioning-status").innerHTML = messageToWrite;
                 }
             } else {
                 setStatusMessage = function(message) {}
             }
             
-            var lastOSIOPopupMessage = sessionStorage.getItem('osio-provisioning-popup-message');
-            if (lastOSIOPopupMessage) {
-              setStatusMessage(lastOSIOPopupMessage);
-            }
+            setStatusMessage(osio_msg_checking_availability);
             
             var promise = originalInit(initOptions);
             promise.success(function(arg) {
@@ -273,10 +288,11 @@ var osioUser;
                   return setUpNamespaces(keycloak);
               })
               .then(() => {
-            	  setStatusMessage("Eclipse Che resources successfully granted");
+            	  setStatusMessage("Eclipse Che is ready to start");
                   finalPromise.setSuccess(arg);
               })
               .catch((error) => {
+            	  setStatusMessage("Eclipse Che resources not available for the user. Please contact support.");
                   finalPromise.setError(error);
               });
             }).error(function(data) {
@@ -287,7 +303,7 @@ var osioUser;
                     var isProvisioning = false;
                     var provisioningTimeoutFailure = false;
                     if (lastProvisioningDate) {
-                      if (new Date().getTime() < parseInt(lastProvisioningDate) + 30000) {
+                      if (new Date().getTime() < parseInt(lastProvisioningDate) + 120000) {
                           isProvisioning = true;
                       } else {
                               provisioningTimeoutFailure = true;
@@ -296,7 +312,7 @@ var osioUser;
                     
                     if (provisioningTimeoutFailure) {
                       sessionStorage.removeItem('osio-provisioning');
-                      sessionStorage.removeItem('osio-provisioning-popup-message')                        
+                      sessionStorage.removeItem('osio-provisioning-notification-message')                        
                       setStatusMessage("Error during the creation of the <strong>OpenShift.io</strong> account.<br/>Please contact the support.");
                       finalPromise.setError(data);
                     } else {
@@ -314,30 +330,31 @@ var osioUser;
                                   osioProvisioningFrameDocument.open();
                                   osioProvisioningFrameDocument.write(request.responseText);
                                   osioProvisioningFrameDocument.close();
-	                          	  if (osioUser != 'unknown2') {
+	                          	  if (osioUser != 'unknown') {
 	                        		  osioProvisioningFrameDocument.getElementById('osio-user-placeholder').innerHTML=", " + osioUser;
 	                        	  }
                       		} else {
+                      			  sessionStorage.removeItem('osio-provisioning-notification-message');
                                   finalPromise.setError("OSIO provisioning page loaded at URL: " + provisioningPage + " should be valid HTML", request);
                       		}
                           }, function(request) {
+                  			  sessionStorage.removeItem('osio-provisioning-notification-message');
                               finalPromise.setError("OSIO provisioning page could not be loaded at URL: " + provisioningPage, request);
                           });
                       } else {
-                            var message = "Provisioning the user for <strong>OpenShift.io</strong>";
-                            sessionStorage.setItem('osio-provisioning-popup-message', message);
-                            setStatusMessage(message);
+                            setStatusMessage(osio_msg_provisioning);
+                            sessionStorage.setItem('osio-provisioning-notification-message', osio_msg_provisioning);
                             setTimeout(function(){
                                 window.location.reload();
                             }, 1000);
                       }
                     }
                 } else {
+    			    sessionStorage.removeItem('osio-provisioning-notification-message');
                 	setStatusMessage("Error during authentication");
                     var w = window.open('', 'osio_provisioning');
                     w && w.close();
                     sessionStorage.removeItem('osio-provisioning');
-                        sessionStorage.removeItem('osio-provisioning-popup-message')                        
                     finalPromise.setError(data);
                 }
             });
