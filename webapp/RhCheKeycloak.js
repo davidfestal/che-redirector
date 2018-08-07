@@ -238,96 +238,109 @@ var osioUser;
         kc.init = function (initOptions) {
             var finalPromise = createPromise();
 
-            var provisioningMessageDiv = document.createElement('div');
-            provisioningMessageDiv.id = "osio-provisioning-frame";
-            provisioningMessageDiv.style = "display: none; height: 100%; z-index: 999; position:fixed; padding:0; margin:0; top:0; left:0; width: 100%; height: 100%; background:rgba(255,255,255,1);";
-            provisioningMessageDiv.innerHTML = '<iframe style="border: 0px; width: 100%; height: 100%" src="' + provisioningPage +  '"></iframe>';
-            document.body.appendChild(provisioningMessageDiv);
-            
-            if (document.getElementsByClassName('ide-page-loader-content').length > 0) {
-                var pageLoaderDiv = document.getElementsByClassName('ide-page-loader-content')[0];
-                var loaderImage = pageLoaderDiv.getElementsByTagName("img")[0];
-                if (loaderImage) {
-                	loaderImage.src = "/dashboard/assets/branding/loader.svg";
-                }
-                
-                var statusDiv = document.createElement('div');
-                statusDiv.style = "text-align: center; position: fixed; top: 0; bottom: 0; left: 0; right: 0; margin: auto; height: 100%;";
-                statusDiv.innerHTML = '\
-                	<p id="osio-provisioning-status" style="position: relative; top: 50%; margin-top: 60px; font-weight: 500; font-size: larger; color: #bbb;"></p>';
-                pageLoaderDiv.appendChild(statusDiv);
-                setStatusMessage = function(message) {
-                	document.getElementById("osio-provisioning-status").innerHTML = lastOSIOPopupMessage;
-                }
-            } else {
-                setStatusMessage = function(message) {}
-            }
-            
-            var lastOSIOPopupMessage = sessionStorage.getItem('osio-provisioning-popup-message');
-            if (lastOSIOPopupMessage) {
-              setStatusMessage(lastOSIOPopupMessage);
-            }
-            
-            var promise = originalInit(initOptions);
-            promise.success(function(arg) {
-                var keycloak = kc;
-              sessionStorage.removeItem('osio-provisioning');
-              var w = window.open('', 'osio_provisioning');
-              w && w.close();
-              performAccounkLinking(keycloak)
-              .then(()=>{
-                  return setUpNamespaces(keycloak);
-              })
-              .then(() => {
-            	  setStatusMessage("Eclipse Che resources successfully granted");
-                  finalPromise.setSuccess(arg);
-              })
-              .catch((error) => {
-                  finalPromise.setError(error);
-              });
-            }).error(function(data) {
-                    var keycloak = kc;
-                if (data && (data.status == 403 || data.status == 401) && userNeedsApproval(data)) {
-                    osioUser = userNeedsApproval(data);
-                    var lastProvisioningDate = sessionStorage.getItem('osio-provisioning');
-                    var isProvisioning = false;
-                    var provisioningTimeoutFailure = false;
-                    if (lastProvisioningDate) {
-                      if (new Date().getTime() < parseInt(lastProvisioningDate) + 30000) {
-                          isProvisioning = true;
-                      } else {
-                              provisioningTimeoutFailure = true;
-                      }
+            get(provisioningPage)
+            .then(function(request) {
+            	var contentType = request.getResponseHeader('content-type');
+        		if ( contentType && contentType.includes('html')) {
+                    var provisioningMessageDiv = document.createElement('div');
+                    provisioningMessageDiv.style = "display: none; height: 100%; z-index: 999; position:fixed; padding:0; margin:0; top:0; left:0; width: 100%; height: 100%; background:rgba(255,255,255,1);";
+                    provisioningMessageDiv.innerHTML = '<iframe id="osio-provisioning-frame" style="border: 0px; width: 100%; height: 100%"></iframe>';
+                    document.body.appendChild(provisioningMessageDiv);
+                    var osioProvisioningFrameDocument = document.getElementById('osio-provisioning-frame').contentWindow.document
+                    osioProvisioningFrameDocument.open();
+                    osioProvisioningFrameDocument.write(request.responseText);
+                    osioProvisioningFrameDocument.close();
+                    
+                    if (document.getElementsByClassName('ide-page-loader-content').length > 0) {
+                        var pageLoaderDiv = document.getElementsByClassName('ide-page-loader-content')[0];
+                        var loaderImage = pageLoaderDiv.getElementsByTagName("img")[0];
+                        if (loaderImage) {
+                        	loaderImage.src = "/dashboard/assets/branding/loader.svg";
+                        }
+                        
+                        var statusDiv = document.createElement('div');
+                        statusDiv.style = "text-align: center; position: fixed; top: 0; bottom: 0; left: 0; right: 0; margin: auto; height: 100%;";
+                        statusDiv.innerHTML = '\
+                        	<p id="osio-provisioning-status" style="position: relative; top: 50%; margin-top: 60px; font-weight: 500; font-size: larger; color: #bbb;"></p>';
+                        pageLoaderDiv.appendChild(statusDiv);
+                        setStatusMessage = function(message) {
+                        	document.getElementById("osio-provisioning-status").innerHTML = lastOSIOPopupMessage;
+                        }
+                    } else {
+                        setStatusMessage = function(message) {}
                     }
                     
-                    if (provisioningTimeoutFailure) {
-                      sessionStorage.removeItem('osio-provisioning');
-                          sessionStorage.removeItem('osio-provisioning-popup-message')                        
-                      setStatusMessage("Error during the creation of the <strong>OpenShift.io</strong> account.<br/>Please contact the support.");
-                      finalPromise.setError(data);
-                    } else {
-                      if (!isProvisioning) {
-                    	  if (osioUser != 'unknown') {
-                        	  document.getElementById('osio-provisioning-frame').contentWindow.document.getElementById('osio-user-placeholder').innerHTML=", " + osioUser;
-                    	  }
-                    	  provisioningMessageDiv.style.display = 'block';
-                      } else {
-                            var message = "Provisioning the user for <strong>OpenShift.io</strong>";
-                            sessionStorage.setItem('osio-provisioning-popup-message', message);
-                            setStatusMessage(message);
-                            setTimeout(function(){
-                                window.location.reload();
-                            }, 1000);
-                      }
+                    var lastOSIOPopupMessage = sessionStorage.getItem('osio-provisioning-popup-message');
+                    if (lastOSIOPopupMessage) {
+                      setStatusMessage(lastOSIOPopupMessage);
                     }
-                } else {
-                	setStatusMessage("Error during authentication");
-                    var w = window.open('', 'osio_provisioning');
-                    w && w.close();
-                    sessionStorage.removeItem('osio-provisioning');
-                        sessionStorage.removeItem('osio-provisioning-popup-message')                        
-                    finalPromise.setError(data);
-                }
+                    
+                    var promise = originalInit(initOptions);
+                    promise.success(function(arg) {
+                        var keycloak = kc;
+                      sessionStorage.removeItem('osio-provisioning');
+                      var w = window.open('', 'osio_provisioning');
+                      w && w.close();
+                      performAccounkLinking(keycloak)
+                      .then(()=>{
+                          return setUpNamespaces(keycloak);
+                      })
+                      .then(() => {
+                    	  setStatusMessage("Eclipse Che resources successfully granted");
+                          finalPromise.setSuccess(arg);
+                      })
+                      .catch((error) => {
+                          finalPromise.setError(error);
+                      });
+                    }).error(function(data) {
+                            var keycloak = kc;
+                        if (data && (data.status == 403 || data.status == 401) && userNeedsApproval(data)) {
+                            osioUser = userNeedsApproval(data);
+                            var lastProvisioningDate = sessionStorage.getItem('osio-provisioning');
+                            var isProvisioning = false;
+                            var provisioningTimeoutFailure = false;
+                            if (lastProvisioningDate) {
+                              if (new Date().getTime() < parseInt(lastProvisioningDate) + 30000) {
+                                  isProvisioning = true;
+                              } else {
+                                      provisioningTimeoutFailure = true;
+                              }
+                            }
+                            
+                            if (provisioningTimeoutFailure) {
+                              sessionStorage.removeItem('osio-provisioning');
+                                  sessionStorage.removeItem('osio-provisioning-popup-message')                        
+                              setStatusMessage("Error during the creation of the <strong>OpenShift.io</strong> account.<br/>Please contact the support.");
+                              finalPromise.setError(data);
+                            } else {
+                              if (!isProvisioning) {
+                            	  if (osioUser != 'unknown2') {
+                            		  osioProvisioningFrameDocument.getElementById('osio-user-placeholder').innerHTML=", " + osioUser;
+                            	  }
+                            	  provisioningMessageDiv.style.display = 'block';
+                              } else {
+                                    var message = "Provisioning the user for <strong>OpenShift.io</strong>";
+                                    sessionStorage.setItem('osio-provisioning-popup-message', message);
+                                    setStatusMessage(message);
+                                    setTimeout(function(){
+                                        window.location.reload();
+                                    }, 1000);
+                              }
+                            }
+                        } else {
+                        	setStatusMessage("Error during authentication");
+                            var w = window.open('', 'osio_provisioning');
+                            w && w.close();
+                            sessionStorage.removeItem('osio-provisioning');
+                                sessionStorage.removeItem('osio-provisioning-popup-message')                        
+                            finalPromise.setError(data);
+                        }
+                    });
+        		} else {
+                    finalPromise.setError("OSIO provisioning page loaded at URL: " + provisioningPage + " should be valid HTML", request);
+        		}
+            }, function(request) {
+                finalPromise.setError("OSIO provisioning page could not be loaded at URL: " + provisioningPage, request);
             });
             
             return finalPromise.promise;
