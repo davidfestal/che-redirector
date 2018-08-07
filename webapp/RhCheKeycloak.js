@@ -142,12 +142,15 @@ var osioUser;
                         json.errors &&
                         json.errors[0] &&
                         json.errors[0].detail == "token is missing") {
+                    sessionStorage.removeItem('osio-provisioning-notification-message');
+                    setStatusMessage(osio_msg_linking_account);
                     return get(osioAuthURL + "/token/link?for=" + encodeURIComponent(cluster) + "&redirect=" + encodeURIComponent(window.location), keycloak.token)
                     .then((request) => {
                         var json = JSON.parse(request.responseText);
                         if (json && json.redirect_location) {
                             sessionStorage.setItem('osio-provisioning-notification-message', osio_msg_linking_account);
                             window.location.replace(json.redirect_location);
+                            return Promise.reject(request);
                         } else {
                             sessionStorage.removeItem('osio-provisioning-notification-message');
                             return Promise.reject("Cannot get account linking page for user: " + keycloak.tokenParsed.preferred_username)
