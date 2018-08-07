@@ -251,7 +251,7 @@ var osioUser;
                 	<p id="osio-provisioning-status" style="position: relative; top: 50%; margin-top: 60px; font-weight: 500; font-size: larger; color: #bbb;"></p>';
                 pageLoaderDiv.appendChild(statusDiv);
                 setStatusMessage = function(message) {
-                	document.getElementById("osio-provisioning-status").innerHTML = lastOSIOPopupMessage;
+                	document.getElementById("osio-provisioning-status").innerHTML = message;
                 }
             } else {
                 setStatusMessage = function(message) {}
