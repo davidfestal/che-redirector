@@ -17,10 +17,9 @@
  * provided that they produce access tokens as JWT tokens with `iat` and `exp` claims.
  */
 
-const osio_msg_checking_availability = "Connecting to <strong>Eclipse Che</strong>";
 const osio_msg_provisioning = "Creating your <strong>OpenShift</strong> account";
 const osio_msg_linking_account = "Linking your <strong>OpenShift</strong> account";
-const osio_msg_setting_up_namespaces = "Setting up <strong>OpenShift.io</strong> environment";
+const osio_msg_setting_up_namespaces = "Setting up your <strong>OpenShift.io</strong> environment";
 const osio_msg_error_no_resources = "Resources required to use <strong>Eclipse Che</strong> could not be granted to the user.<br>Please contact support.";
 const osio_msg_started = "<strong>Eclipse Che</strong> is starting";
 
@@ -280,7 +279,7 @@ var osioUser;
                 setStatusMessage = function(message) {}
             }
             
-            setStatusMessage(osio_msg_checking_availability);
+            setStatusMessage("");
             
             var promise = originalInit(initOptions);
             promise.success(function(arg) {
