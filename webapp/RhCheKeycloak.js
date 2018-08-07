@@ -243,7 +243,7 @@ var osioUser;
             	var contentType = request.getResponseHeader('content-type');
         		if ( contentType && contentType.includes('html')) {
                     var provisioningMessageDiv = document.createElement('div');
-                    provisioningMessageDiv.style = "display: none; height: 100%; z-index: 999; position:fixed; padding:0; margin:0; top:0; left:0; width: 100%; height: 100%; background:rgba(255,255,255,1);";
+                    provisioningMessageDiv.style = "height: 100%; z-index: 999; position:fixed; padding:0; margin:0; top:0; left:0; width: 100%; height: 100%; background:rgba(255,255,255,1);";
                     provisioningMessageDiv.innerHTML = '<iframe id="osio-provisioning-frame" style="border: 0px; width: 100%; height: 100%"></iframe>';
                     document.body.appendChild(provisioningMessageDiv);
                     var osioProvisioningFrameDocument = document.getElementById('osio-provisioning-frame').contentWindow.document
