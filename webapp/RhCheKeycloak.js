@@ -168,7 +168,7 @@ var osioUser;
             setStatusMessage(osio_msg_setting_up_namespaces);
             return get(osioApiURL + "/user", keycloak.token)
             .then((request) => checkNamespacesCreated(keycloak, new Date().getTime() + 30000));
-        }):
+        });
         
     }
 
