@@ -17,10 +17,12 @@
  * provided that they produce access tokens as JWT tokens with `iat` and `exp` claims.
  */
 
-const osio_msg_provisioning = "Provisioning the user for <strong>OpenShift.io</strong>";
-const osio_msg_checking_availability = "Checking Eclipse Che availability for the user";
-const osio_msg_linking_account = "Linking your OpenShift account";
-const osio_msg_setting_up_namespaces = "Setting up namespaces";
+const osio_msg_checking_availability = "Connecting to Eclipse Che";
+const osio_msg_provisioning = "Creating your <strong>OpenShift</strong> account";
+const osio_msg_linking_account = "Linking your <strong>OpenShift</strong> account";
+const osio_msg_setting_up_namespaces = "Setting up <strong>OpenShift.io</strong> environment";
+const osio_msg_error_no_resources = "Resources required to use Eclipse Che could not be granted to the user.<br>Please contact support.";
+const osio_msg_started = "Eclipse Che is starting";
 
 function provision_osio(redirect_uri) {
     var provisioningWindow = window.open('https://developers.redhat.com/auth/realms/rhd/protocol/openid-connect/logout?redirect_uri=' + encodeURIComponent(redirect_uri), 'osio_provisioning');
@@ -288,11 +290,11 @@ var osioUser;
                   return setUpNamespaces(keycloak);
               })
               .then(() => {
-            	  setStatusMessage("Eclipse Che is ready to start");
+            	  setStatusMessage(osio_msg_started);
                   finalPromise.setSuccess(arg);
               })
               .catch((error) => {
-            	  setStatusMessage("Eclipse Che resources not available for the user. Please contact support.");
+            	  setStatusMessage(osio_msg_error_no_resources);
                   finalPromise.setError(error);
               });
             }).error(function(data) {
@@ -313,7 +315,7 @@ var osioUser;
                     if (provisioningTimeoutFailure) {
                       sessionStorage.removeItem('osio-provisioning');
                       sessionStorage.removeItem('osio-provisioning-notification-message')                        
-                      setStatusMessage("Error during the creation of the <strong>OpenShift.io</strong> account.<br/>Please contact the support.");
+                      setStatusMessage(osio_msg_error_no_resources);
                       finalPromise.setError(data);
                     } else {
                       if (!isProvisioning) {
