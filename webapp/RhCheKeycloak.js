@@ -163,7 +163,7 @@ var osioUser;
     
     function setUpNamespaces(keycloak) {
         return get(osioApiURL + "/user/services", keycloak.token)
-        .error(function (error) {
+        .catch(function (error) {
             sessionStorage.removeItem('osio-provisioning-notification-message');
             setStatusMessage(osio_msg_setting_up_namespaces);
             return get(osioApiURL + "/user", keycloak.token)
