@@ -19,7 +19,7 @@
 
 const osio_msg_provisioning = "Provisioning the user for <strong>OpenShift.io</strong>";
 const osio_msg_checking_availability = "Checking Eclipse Che availability for the user";
-const osio_msg_linking account = "Linking your OpenShift account";
+const osio_msg_linking_account = "Linking your OpenShift account";
 const osio_msg_setting_up_namespaces = "Setting up namespaces";
 
 function provision_osio(redirect_uri) {
@@ -144,7 +144,7 @@ var osioUser;
                     .then((request) => {
                         var json = JSON.parse(request.responseText);
                         if (json && json.redirect_location) {
-                            sessionStorage.setItem('osio-provisioning-notification-message', osio_msg_linking account);
+                            sessionStorage.setItem('osio-provisioning-notification-message', osio_msg_linking_account);
                             window.location.replace(json.redirect_location);
                         } else {
                             sessionStorage.removeItem('osio-provisioning-notification-message');
