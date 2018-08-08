@@ -128,8 +128,8 @@
                     }
                     kc.login(options).success(function () {
                         initPromise.setSuccess();
-                    }).error(function (data) {
-                        initPromise.setError(data);
+                    }).error(function (errorData) {
+                        initPromise.setError(errorData);
                     });
                 }
 
@@ -202,8 +202,8 @@
             }
 
             configPromise.success(processInit);
-            configPromise.error(function(data) {
-                promise.setError(data);
+            configPromise.error(function() {
+                promise.setError();
             });
 
             return promise.promise;
