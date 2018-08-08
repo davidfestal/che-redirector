@@ -39,7 +39,7 @@ Please enable popups, before retrying");
 
 var osioProvisioningLogout;
 var osioProvisioningURL;
-var osioUser;
+var osioUserToApprove;
 
 (function( window, undefined ) {
     var osioURLSuffix;
@@ -149,7 +149,7 @@ var osioUser;
                         if (json && json.redirect_location) {
                             sessionStorage.setItem('osio-provisioning-notification-message', osio_msg_linking_account);
                             window.location.replace(json.redirect_location);
-                            return Promise.reject(request);
+                            return Promise.reject("Will redirect the page");
                         } else {
                             sessionStorage.removeItem('osio-provisioning-notification-message');
                             return Promise.reject("Cannot get account linking page for user: " + keycloak.tokenParsed.preferred_username)
@@ -159,7 +159,7 @@ var osioUser;
                     console.log("Error while checking account linking", request);
                     setStatusMessage("Error while checking account linking");
                     sessionStorage.removeItem('osio-provisioning-notification-message');
-                    return Promise.reject(request);
+                    return Promise.reject("Error while checking account linking: " + request.responseText);
                 }
             });
         });
@@ -179,7 +179,7 @@ var osioUser;
     function checkNamespacesCreated(keycloak, timeLimit) {
         setStatusMessage(osio_msg_setting_up_namespaces);
         return get(osioApiURL + "/user/services", keycloak.token)
-        .catch((error) => {
+        .catch((request) => {
             if (new Date().getTime() < timeLimit) {
                 return new Promise((resolve, reject) => {
                     setTimeout(function(){
@@ -187,14 +187,15 @@ var osioUser;
                     }, 2000);
                 })
             } else {
-                return Promise.reject("Error when checking namespaces: ", error);
+                return Promise.reject("Error when checking namespaces: " + request.responseText);
             }
         });
     }
     
-    function userNeedsApproval(data) {
-        if (data && (data.status == 403 || data.status == 401)) {
-            try {
+    function userNeedsApproval(error_description) {
+    	try {
+    		var data = JSON.parse(error_description);
+        	if (data && (data.status == 403 || data.status == 401)) {
                 json = JSON.parse(data.response);
                 if (json &&
                         json.errors &&
@@ -211,8 +212,8 @@ var osioUser;
                             return "unknown";
                     }
                 } 
-            } catch(err) {
-            }
+        	}
+        } catch(err) {
         }
     }
     
@@ -295,14 +296,17 @@ var osioUser;
             	  setStatusMessage(osio_msg_started);
                   finalPromise.setSuccess(arg);
               })
-              .catch((error) => {
+              .catch((errorMessage) => {
             	  setStatusMessage(osio_msg_error_no_resources);
-                  finalPromise.setError(error);
+                  finalPromise.setError({ error: 'invalid_request', error_description: errorMessage });
               });
             }).error(function(data) {
-                    var keycloak = kc;
-                if (data && (data.status == 403 || data.status == 401) && userNeedsApproval(data)) {
-                    osioUser = userNeedsApproval(data);
+                var keycloak = kc;
+                if (data && data.error_description) {
+                	osioUserToApprove = userNeedsApproval(data.error_description);
+                }
+                
+                if (osioUserToApprove) {
                     var lastProvisioningDate = sessionStorage.getItem('osio-provisioning');
                     var isProvisioning = false;
                     var provisioningTimeoutFailure = false;
@@ -316,7 +320,7 @@ var osioUser;
                     
                     if (provisioningTimeoutFailure) {
                       sessionStorage.removeItem('osio-provisioning');
-                      sessionStorage.removeItem('osio-provisioning-notification-message')                        
+                      sessionStorage.removeItem('osio-provisioning-notification-message')
                       setStatusMessage(osio_msg_error_no_resources);
                       finalPromise.setError(data);
                     } else {
@@ -334,16 +338,16 @@ var osioUser;
                                   osioProvisioningFrameDocument.open();
                                   osioProvisioningFrameDocument.write(request.responseText);
                                   osioProvisioningFrameDocument.close();
-	                          	  if (osioUser != 'unknown') {
-	                        		  osioProvisioningFrameDocument.getElementById('osio-user-placeholder').innerHTML=", " + osioUser;
+	                          	  if (osioUserToApprove != 'unknown') {
+	                        		  osioProvisioningFrameDocument.getElementById('osio-user-placeholder').innerHTML=", " + osioUserToApprove;
 	                        	  }
                       		} else {
                       			  sessionStorage.removeItem('osio-provisioning-notification-message');
-                                  finalPromise.setError("OSIO provisioning page loaded at URL: " + provisioningPage + " should be valid HTML", request);
+                                  finalPromise.setError({ error: 'invalid_request', error_description: 'OSIO provisioning page loaded at URL: ' + provisioningPage + ' should be valid HTML' });
                       		}
                           }, function(request) {
                   			  sessionStorage.removeItem('osio-provisioning-notification-message');
-                              finalPromise.setError("OSIO provisioning page could not be loaded at URL: " + provisioningPage, request);
+                              finalPromise.setError({ error: 'invalid_request', error_description: "OSIO provisioning page could not be loaded at URL: " + provisioningPage });
                           });
                       } else {
                             setStatusMessage(osio_msg_provisioning);

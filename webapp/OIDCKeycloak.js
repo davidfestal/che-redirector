@@ -556,9 +556,38 @@
                             var tokenResponse = JSON.parse(req.responseText);
                             authSuccess(tokenResponse['access_token'], tokenResponse['refresh_token'], tokenResponse['id_token'], kc.flow === 'standard');
                         } else {
-                            var error = { "status": req.status, "response": req.response };
-                            kc.onAuthError && kc.onAuthError(error);
-                            promise && promise.setError(error);
+                            var errorData = {};
+                            var json;
+                            try {
+                                json = JSON.parse(req.response);
+                            } catch(err) {
+                            }
+                            
+                            if (json &&
+                                    json.error) {
+                                errorData['error'] = json.error;
+                                if (json.error_description) {
+                                    errorData['error_description'] = json.error_description;
+                                }
+                                if (json.error_uri) {
+                                    errorData['error_uri'] = json.error_uri;
+                                }
+                            } else {
+                                errorData['error'] = 'invalid_request';
+                                var description = {
+                                	status: req.status,
+                                	response: req.responseText,
+                                };
+                                try {
+                                    var authHeader = req.getResponseHeader('WWW-Authenticate');
+                                    if (authHeader) {
+                                    	description['www_authenticate_header'] = authHeader;
+                                    }
+                                } catch(err) {}
+                                errorData['error_description'] = JSON.stringify(description);
+                            }
+                            kc.onAuthError && kc.onAuthError(errorData);
+                            promise && promise.setError(errorData);
                         }
                     }
                 };
