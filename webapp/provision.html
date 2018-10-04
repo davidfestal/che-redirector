@@ -67,7 +67,7 @@ function activateUser() {
     grecaptcha.execute();
 }
 function checkUser(token) {
-    console.log("User token = " + userToken);
+    console.log("User token = " + token);
     parent.provision_osio(parent.osioProvisioningURL)
 }
 </script>
