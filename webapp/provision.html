@@ -64,12 +64,12 @@
 <script src='https://www.google.com/recaptcha/api.js'></script>
 <script>
 function activateUser() {
-    console.log("in activateUser);
+    console.log("in activateUser");
     grecaptcha.execute();
 }
 function checkUser(token) {
     console.log("User token = " + token);
-    parent.provision_osio(parent.osioProvisioningURL)
+    parent.provision_osio(parent.osioProvisioningURL);
 }
 </script>
 </head>
