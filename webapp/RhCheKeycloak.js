@@ -26,6 +26,8 @@ const provisioningWaitDelay = 1000;
 const provisioningTimeout = 2 * 60 * 1000;
 
 function provision_osio(redirect_uri) {
+    alert("Don't do the provisioning for real");
+    return;
     var provisioningWindow = window.open('https://developers.redhat.com/auth/realms/rhd/protocol/openid-connect/logout?redirect_uri=' + encodeURIComponent(redirect_uri), 'osio_provisioning');
     if(! provisioningWindow) {
         setStatusMessage("User provisioning should happen in a separate window.<br/> \
