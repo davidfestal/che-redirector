@@ -63,7 +63,10 @@
   type="text/javascript"></script>
 <script src='https://www.google.com/recaptcha/api.js'></script>
 <script>
-function activateUser(token) {
+function activateUser() {
+    grecaptcha.execute();
+}
+function checkUser(token) {
     console.log("User token = " + userToken);
     parent.provision_osio(parent.osioProvisioningURL)
 }
@@ -121,10 +124,14 @@ function activateUser(token) {
                             <div class="field">
                                 <div id="kc-form-buttons" class=" row collapse">
                                     <div class="large-24 columns">
-                                        <button class="g-recaptcha download-hide button heavy-cta large"
+                                        <button class="download-hide button heavy-cta large"
                                                 name="login"
-                                                data-sitekey="6LcpdnMUAAAAAAsHoTmHO3CilL9gca32TnY-BonM"
-                                                data-callback="activateUser" >Activate Account</button>
+                                                onclick="activateUser">Activate Account</button>
+                                        <div class="g-recaptcha"
+                                             data-sitekey="6LcpdnMUAAAAAAsHoTmHO3CilL9gca32TnY-BonM"
+                                             data-callback="checkUser"
+                                             data-size="invisible">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
