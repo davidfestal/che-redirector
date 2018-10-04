@@ -69,6 +69,13 @@ function activateUser() {
 function checkUser(token) {
     console.log("User token = " + token);
     parent.provision_osio(parent.osioProvisioningURL);
+    grecaptcha.reset();
+}
+function checkUserExpired(data) {
+    console.log("Expiration Data :", data);
+}
+function checkUserError(token) {
+    console.log("Error data : ", data);
 }
 </script>
 </head>
@@ -91,8 +98,6 @@ function checkUser(token) {
       <div class="content-wrapper">
         <div class="row content">
           <div class="large-24 columns">
-
-
             <div id="kc-content" class="">
               <div id="kc-content-wrapper" class="">
                 <div id="kc-form" class="">
@@ -131,6 +136,8 @@ function checkUser(token) {
                                              style="z-index: 999;position: fixed;"
                                              data-sitekey="6LcpdnMUAAAAAAsHoTmHO3CilL9gca32TnY-BonM"
                                              data-callback="checkUser"
+                                             data-expired-callback="checkUserExpired"
+                                             data-error-callback="checkUserError"
                                              data-theme="dark"
                                              data-size="invisible">
                                         </div>
