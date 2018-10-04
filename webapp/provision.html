@@ -64,6 +64,7 @@
 <script src='https://www.google.com/recaptcha/api.js'></script>
 <script>
 function activateUser() {
+    console.log("in activateUser);
     grecaptcha.execute();
 }
 function checkUser(token) {
@@ -71,6 +72,11 @@ function checkUser(token) {
     parent.provision_osio(parent.osioProvisioningURL)
 }
 </script>
+<style>
+.grecaptcha-badge{
+    display: none;
+}
+</style>
 </head>
 
 <body class="home fullbleed " style="">
@@ -128,9 +134,11 @@ function checkUser(token) {
                                                 name="login"
                                                 onclick="return activateUser()">Activate Account</button>
                                         <div class="g-recaptcha"
+                                             style="z-index: 999;position: fixed;"
                                              data-sitekey="6LcpdnMUAAAAAAsHoTmHO3CilL9gca32TnY-BonM"
                                              data-callback="checkUser"
-                                             data-size="invisible">
+                                             data-size="invisible"
+                                             data-badge="inline">
                                         </div>
                                     </div>
                                 </div>
