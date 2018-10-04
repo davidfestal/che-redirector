@@ -61,6 +61,13 @@
 <script
   src="https://developers.redhat.com/auth/resources/3.4.3.final/login/openshift-io/js/vendor/hideShowPassword.js?v=3.4.11"
   type="text/javascript"></script>
+<script src='https://www.google.com/recaptcha/api.js'></script>
+<script>
+function activateUser(token) {
+    console.log("User token = " + userToken);
+    parent.provision_osio(parent.osioProvisioningURL)
+}
+</script>
 </head>
 
 <body class="home fullbleed " style="">
@@ -114,7 +121,10 @@
                             <div class="field">
                                 <div id="kc-form-buttons" class=" row collapse">
                                     <div class="large-24 columns">
-                                        <button class="download-hide button heavy-cta large" name="login" onclick="parent.provision_osio(parent.osioProvisioningURL)">Activate Account</button>
+                                        <button class="g-recaptcha download-hide button heavy-cta large"
+                                                name="login"
+                                                data-sitekey="6LcpdnMUAAAAAAsHoTmHO3CilL9gca32TnY-BonM"
+                                                data-callback="activateUser" >Activate Account</button>
                                     </div>
                                 </div>
                             </div>
