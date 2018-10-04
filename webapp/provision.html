@@ -64,6 +64,7 @@
 <script src='https://www.google.com/recaptcha/api.js?hl=en'></script>
 <script>
 function activateUser() {
+    console.log("Executing captcha");
     grecaptcha.execute();
 }
 function checkUser(token) {
