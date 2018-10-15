@@ -26,57 +26,16 @@ const telemetry_event_setup_namespaces = 'setup namespaces for che';
 const provisioningWaitDelay = 1000;
 const provisioningTimeout = 2 * 60 * 1000;
 
-function provision_osio(token, userName) {
-    function startProvisioning() {
-/*        var provisioningWindow = window.open('https://developers.redhat.com/auth/realms/rhd/protocol/openid-connect/logout?redirect_uri=' + encodeURIComponent(osioProvisioningURL), 'osio_provisioning');
-        if(! provisioningWindow) {
-            sessionStorage.setItem('osio-provisioning-failure', "User provisioning should happen in a separate window.<br/> \
-            Please enable popups, before retrying.");
-        } else {
-            osioCheLoginFlow.track(telemetry_event_enter_provisioning_page_for_che, { user: osioUserToApprove });
-            sessionStorage.setItem('osio-provisioning-notification-message', osio_msg_provisioning);
-            sessionStorage.setItem('osio-provisioning', new Date().getTime());
-        }
-*/
-        var provisioningWindow = document.getElementById('osio-provisioning-frame').contentWindow;
-        provisioningWindow.onload = () => {
-           console.log(provisioningWindow.document.documentElement.textContent);
-           window.location.reload();
-        }
-        provisioningWindow.postMessage('redirectToProvisioning', '*');
+function provision_osio(userName) {
+    var provisioningWindow = window.open('https://developers.redhat.com/auth/realms/rhd/protocol/openid-connect/logout?redirect_uri=' + encodeURIComponent(osioProvisioningURL), 'osio_provisioning');
+    if(! provisioningWindow) {
+        sessionStorage.setItem('osio-provisioning-failure', "User provisioning should happen in a separate window.<br/> \
+        Please enable popups, before retrying.");
+    } else {
+        osioCheLoginFlow.track(telemetry_event_enter_provisioning_page_for_che, { user: osioUserToApprove });
+        sessionStorage.setItem('osio-provisioning-notification-message', osio_msg_provisioning);
+        sessionStorage.setItem('osio-provisioning', new Date().getTime());
     }
-    
-    if (!token) {
-        startProvisioning();
-        return;
-    }
-    
-    osioCheLoginFlow.post("/api/fabric8-end2end/verify", token)
-    .then((request) => {
-        var data = JSON.parse(request.responseText);
-        if (data && data.success) {
-            startProvisioning();
-        } else {
-            if (data) {
-                if (data['error-codes']) {
-                    verification_error("Verification of user '" + userName + "' failed with errors: " + data['error-codes']);
-                } else {
-                    verification_error("Verification of user '" + userName + "' failed", true);
-                }
-            } else {
-                verification_error("Verification of user '" + userName + "' failed due to unexpected response: " + request.responseText);
-            }
-        }
-    },(error) => {
-        var errorDescription;
-        if (request && request.status) {
-            errorDescription = request.status + " - " + request.statusText;
-        } else {
-            errorDescription = request;
-        }
-        var message = "Verification of user '" + userName + "' could not be submitted to the verification server: " + errorDescription;
-        verification_error(message);
-    });
 }
 function verification_error(errorMessage, warning) {
     if (warning) {

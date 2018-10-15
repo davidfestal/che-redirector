@@ -77,8 +77,14 @@ function onCaptchaLoad() {
                 'theme': 'dark',
                 'size': 'invisible'
             });
+            try {
+                grecaptcha.execute(activationCaptcha);
+            } catch(error) {
+                parent.verification_error("ReCaptcha cannot be executed: " + error);
+            }
+        } else {
+            document.getElementById('kc-login-button').disabled = false;
         }
-        document.getElementById('kc-login-button').disabled = false;
     } catch(error) {
         parent.verification_error("ReCaptcha cannot be rendered: " + error);
     }
@@ -88,20 +94,41 @@ function osioUserName() {
 }
 function activateUser() {
     if (siteKey) {
-        try {
-            grecaptcha.execute(activationCaptcha);
-        } catch(error) {
-            parent.verification_error("ReCaptcha cannot be executed: " + error);
-        }
     } else {
         checkUser(undefined);
     }
 }
 function checkUser(token) {
-    parent.provision_osio(token, osioUserName());
+    parent.osioCheLoginFlow.post("/api/fabric8-end2end/verify", token)
+    .then((request) => {
+        var data = JSON.parse(request.responseText);
+        if (data && data.success) {
+            document.getElementById('kc-login-button').disabled = false;
+        } else {
+            if (data) {
+                if (data['error-codes']) {
+                    parent.verification_error("Verification of user '" + userName + "' failed with errors: " + data['error-codes']);
+                } else {
+                    parent.verification_error("Verification of user '" + userName + "' failed", true);
+                }
+            } else {
+                parent.verification_error("Verification of user '" + userName + "' failed due to unexpected response: " + request.responseText);
+            }
+        }
+    },(error) => {
+        var errorDescription;
+        if (request && request.status) {
+            errorDescription = request.status + " - " + request.statusText;
+        } else {
+            errorDescription = request;
+        }
+        var message = "Verification of user '" + userName + "' could not be submitted to the verification server: " + errorDescription;
+        parent.verification_error(message);
+    });
 }
 function captchaExpired() {
     grecaptcha.reset(activationCaptcha);
+    grecaptcha.execute(activationCaptcha);
 }
 function captchaFailed() {
     parent.verification_error("ReCaptcha error for user '" + osioUserName() + "'");
@@ -173,7 +200,7 @@ window.addEventListener("message", (event) =>
                                         <button id="kc-login-button"
                                                 class="download-hide button heavy-cta large"
                                                 name="login"
-                                                onclick="return activateUser()"
+                                                onclick="return parent.provision_osio(osioUserName())"
                                                 disabled>Activate Account</button>
                                         <div id="recaptcha" 
                                              style="z-index: 999;position: fixed;">
