@@ -38,7 +38,9 @@
   href="https://developers.redhat.com/auth/resources/3.4.3.final/login/openshift-io/css/app-20180411.css">
 <link rel="stylesheet"
   href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css">
-<!--[if lt IE 9]><script type="text/javascript" src="//html5shim.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+<!--[if lt IE 9]><script type="text/javascript" src="//html5shim.googlecode.com/svn/trunk/html
+                              <p>
+                                <b>Eclipse Che powered by OpenShift.</b>5.js"></script><![endif]-->
 <!-- RHD css end -->
 
 <link
@@ -61,24 +63,51 @@
 <script
   src="https://developers.redhat.com/auth/resources/3.4.3.final/login/openshift-io/js/vendor/hideShowPassword.js?v=3.4.11"
   type="text/javascript"></script>
-<script src='https://www.google.com/recaptcha/api.js?hl=en'></script>
 <script>
+const siteKey;
+var activationCaptcha;
+function onCaptchaLoad() {
+    try {
+        if (siteKey) {
+            activationCaptcha = grecaptcha.render('recaptcha', {
+                'sitekey': siteKey,
+                'callback': checkUser,
+                'expired-callback': captchaExpired,
+                'error-callback': captchaFailed,
+                'theme': 'dark',
+                'size': 'invisible'
+            });
+        }
+        document.getElementById('kc-login-button').disabled = false;
+    } catch(error) {
+        parent.verification_error("ReCaptcha cannot be rendered: " + error);
+    }
+}
+function osioUserName() {
+    return document.getElementById("osio-user-value").textContent;
+}
 function activateUser() {
-    console.log("Executing captcha");
-    grecaptcha.execute();
+    if (siteKey) {
+        try {
+            grecaptcha.execute(activationCaptcha);
+        } catch(error) {
+            parent.verification_error("ReCaptcha cannot be executed: " + error);
+        }
+    } else {
+        checkUser(undefined);
+    }
 }
 function checkUser(token) {
-    console.log("User token = " + token);
-    parent.provision_osio(parent.osioProvisioningURL);
-    grecaptcha.reset();
+    parent.provision_osio(token, osioUserName(), parent.osioProvisioningURL);
 }
-function checkUserExpired(data) {
-    console.log("Expiration Data :", data);
+function captchaExpired() {
+    grecaptcha.reset(activationCaptcha);
 }
-function checkUserError(token) {
-    console.log("Error data : ", data);
+function captchaFailed() {
+    parent.verification_error("ReCaptcha error for user '" + osioUserName() + "'");
 }
 </script>
+<script src='https://www.google.com/recaptcha/api.js?onload=onCaptchaLoad&render=explicit' async defer></script>
 </head>
 
 <body class="home fullbleed " style="">
@@ -119,7 +148,7 @@ function checkUserError(token) {
                               <p>
                                 <b>Eclipse Che powered by OpenShift.</b>
                                 <br><br>
-                                We’re glad you are here<span id="osio-user-placeholder"></span>.
+                                We’re glad you are here<span id="osio-user-placeholder">, <span id="osio-user-value"></span></span>.
                                 <br><br>
                                 <b>Ready to go ?</b><br><br>
                                 Please activate your account by clicking
@@ -130,17 +159,13 @@ function checkUserError(token) {
                             <div class="field">
                                 <div id="kc-form-buttons" class=" row collapse">
                                     <div class="large-24 columns">
-                                        <button class="download-hide button heavy-cta large"
+                                        <button id="kc-login-button"
+                                                class="download-hide button heavy-cta large"
                                                 name="login"
-                                                onclick="return activateUser()">Activate Account</button>
-                                        <div class="g-recaptcha"
-                                             style="z-index: 999;position: fixed;"
-                                             data-sitekey="6LcpdnMUAAAAAAsHoTmHO3CilL9gca32TnY-BonM"
-                                             data-callback="checkUser"
-                                             data-expired-callback="checkUserExpired"
-                                             data-error-callback="checkUserError"
-                                             data-theme="dark"
-                                             data-size="invisible">
+                                                onclick="return activateUser()"
+                                                disabled>Activate Account</button>
+                                        <div id="recaptcha" 
+                                             style="z-index: 999;position: fixed;">
                                         </div>
                                     </div>
                                 </div>
