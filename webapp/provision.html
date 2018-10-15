@@ -83,9 +83,9 @@ function onCaptchaLoad() {
                 parent.verification_error("ReCaptcha cannot be executed: " + error);
             }
         } else {
-            document.getElementById('checking-message').stype = "display: none";
-            document.getElementById('go-message').stype = "display: inherit";
-            document.getElementById('kc-login-button').stype = "display: inherit";
+            document.getElementById('checking-message').style = "display: none";
+            document.getElementById('go-message').style = "display: inherit";
+            document.getElementById('kc-login-button').style = "display: inherit";
             document.getElementById('kc-login-button').disabled = false;
         }
     } catch(error) {
@@ -106,9 +106,9 @@ function checkUser(token) {
     .then((request) => {
         var data = JSON.parse(request.responseText);
         if (data && data.success) {
-            document.getElementById('checking-message').stype = "display: none";
-            document.getElementById('go-message').stype = "display: inherit";
-            document.getElementById('kc-login-button').stype = "display: inherit";
+            document.getElementById('checking-message').style = "display: none";
+            document.getElementById('go-message').style = "display: inherit";
+            document.getElementById('kc-login-button').style = "display: inherit";
             document.getElementById('kc-login-button').disabled = false;
         } else {
             if (data) {
