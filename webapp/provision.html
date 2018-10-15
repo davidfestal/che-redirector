@@ -83,6 +83,9 @@ function onCaptchaLoad() {
                 parent.verification_error("ReCaptcha cannot be executed: " + error);
             }
         } else {
+            document.getElementById('checking-message').stype = "display: none";
+            document.getElementById('go-message').stype = "display: inherit";
+            document.getElementById('kc-login-button').stype = "display: inherit";
             document.getElementById('kc-login-button').disabled = false;
         }
     } catch(error) {
@@ -103,6 +106,9 @@ function checkUser(token) {
     .then((request) => {
         var data = JSON.parse(request.responseText);
         if (data && data.success) {
+            document.getElementById('checking-message').stype = "display: none";
+            document.getElementById('go-message').stype = "display: inherit";
+            document.getElementById('kc-login-button').stype = "display: inherit";
             document.getElementById('kc-login-button').disabled = false;
         } else {
             if (data) {
@@ -133,16 +139,6 @@ function captchaExpired() {
 function captchaFailed() {
     parent.verification_error("ReCaptcha error for user '" + osioUserName() + "'");
 }
-
-window.addEventListener("message", (event) =>
-    {
-        if (event.source !== parent) {
-            console.log('Bad Source: ', event);
-            return;
-        }
-        window.location.replace('https://developers.redhat.com/auth/realms/rhd/protocol/openid-connect/logout?redirect_uri=' + encodeURIComponent(parent.osioProvisioningURL));
-    }, false);
-
 
 </script>
 <script src='https://www.google.com/recaptcha/api.js?onload=onCaptchaLoad&render=explicit' async defer></script>
@@ -188,19 +184,24 @@ window.addEventListener("message", (event) =>
                                 <br><br>
                                 We’re glad you are here<span id="osio-user-placeholder">, <span id="osio-user-value"></span></span>.
                                 <br><br>
+                                <span id="checking-message">Please wait for some seconds,<br>
+                                just the time to check you're a real user...</span>
+                                <span id="go-message" style="display: none;">
                                 <b>Ready to go ?</b><br><br>
                                 Please activate your account by clicking
                                 on the link below.<br>
                                 We’ll confirm your account login again and grant you the resources to use Eclipse Che. 
+                                </span>
                               </p> <!-- Log in with the Red Hat account that you used when you signed up --> 
                             </div>
                             <div class="field">
                                 <div id="kc-form-buttons" class=" row collapse">
                                     <div class="large-24 columns">
                                         <button id="kc-login-button"
+                                                style="display: none;"
                                                 class="download-hide button heavy-cta large"
                                                 name="login"
-                                                onclick="return parent.provision_osio(osioUserName())"
+                                                onclick="return parent.provision_osio()"
                                                 disabled>Activate Account</button>
                                         <div id="recaptcha" 
                                              style="z-index: 999;position: fixed;">

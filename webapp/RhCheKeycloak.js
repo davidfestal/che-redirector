@@ -26,7 +26,7 @@ const telemetry_event_setup_namespaces = 'setup namespaces for che';
 const provisioningWaitDelay = 1000;
 const provisioningTimeout = 2 * 60 * 1000;
 
-function provision_osio(userName) {
+function provision_osio() {
     var provisioningWindow = window.open('https://developers.redhat.com/auth/realms/rhd/protocol/openid-connect/logout?redirect_uri=' + encodeURIComponent(osioProvisioningURL), 'osio_provisioning');
     if(! provisioningWindow) {
         sessionStorage.setItem('osio-provisioning-failure', "User provisioning should happen in a separate window.<br/> \
