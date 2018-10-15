@@ -98,7 +98,7 @@ function activateUser() {
     }
 }
 function checkUser(token) {
-    parent.provision_osio(token, osioUserName(), parent.osioProvisioningURL);
+    parent.provision_osio(token, osioUserName());
 }
 function captchaExpired() {
     grecaptcha.reset(activationCaptcha);

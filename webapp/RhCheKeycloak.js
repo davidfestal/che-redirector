@@ -26,9 +26,9 @@ const telemetry_event_setup_namespaces = 'setup namespaces for che';
 const provisioningWaitDelay = 1000;
 const provisioningTimeout = 2 * 60 * 1000;
 
-function provision_osio(token, userName, redirect_uri) {
+function provision_osio(token, userName) {
     function startProvisioning() {
-        var provisioningWindow = window.open('https://developers.redhat.com/auth/realms/rhd/protocol/openid-connect/logout?redirect_uri=' + encodeURIComponent(redirect_uri), 'osio_provisioning');
+/*        var provisioningWindow = window.open('https://developers.redhat.com/auth/realms/rhd/protocol/openid-connect/logout?redirect_uri=' + encodeURIComponent(osioProvisioningURL), 'osio_provisioning');
         if(! provisioningWindow) {
             sessionStorage.setItem('osio-provisioning-failure', "User provisioning should happen in a separate window.<br/> \
             Please enable popups, before retrying.");
@@ -37,9 +37,13 @@ function provision_osio(token, userName, redirect_uri) {
             sessionStorage.setItem('osio-provisioning-notification-message', osio_msg_provisioning);
             sessionStorage.setItem('osio-provisioning', new Date().getTime());
         }
-        window.blur();
-        window.focus();
-        window.location.reload();
+*/
+        var provisioningWindow = document.getElementById('osio-provisioning-frame').contentWindow;
+        provisioningWindow.onload = () => {
+           console.log(provisioningWindow.document.documentElement.textContent);
+           window.location.reload();
+        }
+        provisioningWindow.location = ('https://developers.redhat.com/auth/realms/rhd/protocol/openid-connect/logout?redirect_uri=' + encodeURIComponent(osioProvisioningURL));
     }
     
     if (!token) {
@@ -534,10 +538,11 @@ function initAnalytics(writeKey){
                     sessionStorage.removeItem('osio-provisioning');
                     sessionStorage.removeItem('osio-provisioning-timeout-failure');
                     sessionStorage.removeItem('osio-provisioning-failure');
-                    if (lastProvisioningDate) {
+/*                    if (lastProvisioningDate) {
                         var w = window.open('', 'osio_provisioning');
                         w && w.close();
                     }
+*/
                     if (lastProvisioningDate || lastProvisioningTimeoutFailure) {
                         track(telemetry_event_provision_user_for_che);
                     }
