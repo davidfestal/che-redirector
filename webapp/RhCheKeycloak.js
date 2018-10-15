@@ -43,7 +43,7 @@ function provision_osio(token, userName) {
            console.log(provisioningWindow.document.documentElement.textContent);
            window.location.reload();
         }
-        provisioningWindow.location = ('https://developers.redhat.com/auth/realms/rhd/protocol/openid-connect/logout?redirect_uri=' + encodeURIComponent(osioProvisioningURL));
+        provisioningWindow.postMessage(provisioningWindow, 'redirectToProvisioning');
     }
     
     if (!token) {

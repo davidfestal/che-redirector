@@ -106,6 +106,17 @@ function captchaExpired() {
 function captchaFailed() {
     parent.verification_error("ReCaptcha error for user '" + osioUserName() + "'");
 }
+
+window.addEventListener("message", (event) =>
+    {
+        if (event.source !== parent) {
+            console.log('Bad Source: ', event);
+            return;
+        }
+        window.location.replace('https://developers.redhat.com/auth/realms/rhd/protocol/openid-connect/logout?redirect_uri=' + encodeURIComponent(parent.osioProvisioningURL));
+    }, false);
+
+
 </script>
 <script src='https://www.google.com/recaptcha/api.js?onload=onCaptchaLoad&render=explicit' async defer></script>
 </head>
