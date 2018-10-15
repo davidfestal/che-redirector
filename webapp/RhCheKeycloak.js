@@ -43,7 +43,7 @@ function provision_osio(token, userName) {
            console.log(provisioningWindow.document.documentElement.textContent);
            window.location.reload();
         }
-        provisioningWindow.postMessage(provisioningWindow, 'redirectToProvisioning');
+        provisioningWindow.postMessage('redirectToProvisioning', '*');
     }
     
     if (!token) {
