@@ -243,7 +243,7 @@ function initAnalytics(writeKey){
     }
 
     function logRequest(errorMessage, request) {
-        if (request && request.responseText && request.status >= 0) {
+        if (request instanceof XMLHttpRequest) {
             log(errorMessage + " - status code: " + request.status + " - Response body: " + request.responseText);
         } else if (request instanceof Error) {
             log(errorMessage + " : " + request.toString());
