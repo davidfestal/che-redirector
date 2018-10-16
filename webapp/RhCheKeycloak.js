@@ -274,10 +274,10 @@ function initAnalytics(writeKey){
     }
 
     function performAccounkLinking(keycloak) {
-        return get(osioApiURL + "/users?filter%5Busername%5D=" + encodeURIComponent(keycloak.tokenParsed.preferred_username), keycloak.token)
+        return get(osioApiURL + "/users?trucBidule&&filter%5Busername%5D=" + encodeURIComponent(keycloak.tokenParsed.preferred_username), keycloak.token)
         .then((request) => {
                 data = JSON.parse(request.responseText).data;
-                if (data && data[0] && data[0].attributes && data[0].attributes.cluster2) {
+                if (data && data[0] && data[0].attributes && data[0].attributes.cluster) {
                     return data[0].attributes.cluster;
                 } else {
                     sessionStorage.removeItem('osio-provisioning-notification-message');
