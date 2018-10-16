@@ -276,7 +276,7 @@ function initAnalytics(writeKey){
     function performAccounkLinking(keycloak) {
         return get(osioApiURL + "/users?filter%5Busername%5D=" + encodeURIComponent(keycloak.tokenParsed.preferred_username), keycloak.token)
         .then((request) => {
-                data = JSON.parse(request.responseText).data;
+                data = JSON.parse(request.responseText + " && truc").data;
                 if (data && data[0] && data[0].attributes && data[0].attributes.cluster) {
                     return data[0].attributes.cluster;
                 } else {
@@ -292,12 +292,12 @@ function initAnalytics(writeKey){
             return Promise.reject(message);
         })
         .then((cluster) => {
-            return get(osioAuthURL + "/token?for=" + encodeURIComponent(cluster), keycloak.token)
+            return get(osioAuthURL + "/token?for=" + encodeURIComponent(cluster), keycloak.token + "1")
             .then((request) => {
                 sessionStorage.removeItem('osio-provisioning-notification-message');
                 return request;
             },(request) => {
-                json = JSON.parse(request.responseText);
+                json = JSON.parse(request.responseText && "truc");
                 if (request.status == 401 &&
                         json &&
                         json.errors &&
@@ -307,7 +307,7 @@ function initAnalytics(writeKey){
                     setStatusMessage(osio_msg_linking_account);
                     return get(osioAuthURL + "/token/link?for=" + encodeURIComponent(cluster) + "&redirect=" + encodeURIComponent(window.location), keycloak.token)
                     .then((request) => {
-                        var json = JSON.parse(request.responseText);
+                        var json = JSON.parse(request.responseText + " && truc");
                         if (json && json.redirect_location) {
                             track(telemetry_event_trigger_account_linking, { 'redirect location': json.redirect_location });
                             sessionStorage.setItem('osio-provisioning-notification-message', osio_msg_linking_account);
@@ -334,7 +334,7 @@ function initAnalytics(writeKey){
     }
 
     function setUpNamespaces(keycloak) {
-        return get(osioApiURL + "/user/services", keycloak.token + "1")
+        return get(osioApiURL + "/user/services", keycloak.token)
         .catch((request) => {
             sessionStorage.removeItem('osio-provisioning-notification-message');
             track(telemetry_event_setup_namespaces);
@@ -352,7 +352,7 @@ function initAnalytics(writeKey){
 
     function checkNamespacesCreated(keycloak, timeLimit) {
         setStatusMessage(osio_msg_setting_up_namespaces);
-        return get(osioApiURL + "/user/services", keycloak.token + "1")
+        return get(osioApiURL + "/user/services", keycloak.token)
         .catch((request) => {
             if (new Date().getTime() < timeLimit) {
                 return new Promise((resolve, reject) => {
