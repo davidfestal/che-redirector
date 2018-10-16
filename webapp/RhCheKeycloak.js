@@ -292,14 +292,14 @@ function initAnalytics(writeKey){
             return Promise.reject(message);
         })
         .then((cluster) => {
-            return get(osioAuthURL + "/token?for=" + encodeURIComponent(cluster), keycloak.token + "1")
+            return get(osioAuthURL + "/token?for=" + encodeURIComponent(cluster), keycloak.token)
             .then((request) => {
                 sessionStorage.removeItem('osio-provisioning-notification-message');
                 return request;
             },(request) => {
                 json = JSON.parse(request.responseText);
                 if (request.status == 401 &&
-                        json&.TrucMuche &&
+                        json &&
                         json.errors &&
                         json.errors[0] &&
                         json.errors[0].detail == "token is missing") {
@@ -307,7 +307,7 @@ function initAnalytics(writeKey){
                     setStatusMessage(osio_msg_linking_account);
                     return get(osioAuthURL + "/token/link?for=" + encodeURIComponent(cluster) + "&redirect=" + encodeURIComponent(window.location), keycloak.token)
                     .then((request) => {
-                        var json = JSON.parse(request.responseText + " && truc");
+                        var json = JSON.parse(request.responseText);
                         if (json && json.redirect_location) {
                             track(telemetry_event_trigger_account_linking, { 'redirect location': json.redirect_location });
                             sessionStorage.setItem('osio-provisioning-notification-message', osio_msg_linking_account);
@@ -315,7 +315,9 @@ function initAnalytics(writeKey){
                             return new Promise((resolve, reject) => {});
                         } else {
                             sessionStorage.removeItem('osio-provisioning-notification-message');
-                            return Promise.reject("Cannot get account linking page for user: " + keycloak.tokenParsed.preferred_username)
+                            var message = "Cannot get account linking page for user: " + keycloak.tokenParsed.preferred_username;
+                            logRequest(message, request);
+                            return Promise.reject(message)
                         }
                     }, (request) => {
                         sessionStorage.removeItem('osio-provisioning-notification-message');
@@ -334,7 +336,7 @@ function initAnalytics(writeKey){
     }
 
     function setUpNamespaces(keycloak) {
-        return get(osioApiURL + "/user/services", keycloak.token)
+        return get(osioApiURL + "/user/services", keycloak.token + "1")
         .catch((request) => {
             sessionStorage.removeItem('osio-provisioning-notification-message');
             track(telemetry_event_setup_namespaces);
@@ -582,10 +584,10 @@ function initAnalytics(writeKey){
                         var errorMessage;
                         if (error instanceof Error) {
                             errorMessage = "Unexpected error after user provisioning";
+                            log(error);
                         } else {
                             errorMessage = error;
                         }
-                        log(error);
                         setStatusMessage(osio_msg_error_no_resources);
                         finalPromise.setError({ error: 'invalid_request', error_description: errorMessage });
                     });
