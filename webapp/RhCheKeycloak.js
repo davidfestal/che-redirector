@@ -277,12 +277,12 @@ function initAnalytics(writeKey){
         return get(osioApiURL + "/users?filter%5Busername%5D=" + encodeURIComponent(keycloak.tokenParsed.preferred_username), keycloak.token)
         .then((request) => {
                 data = JSON.parse(request.responseText).data;
-                if (data && data[0] && data[0].attributes) {
-                    return data[0].attributes.cluster.trucmuche;
+                if (data && data[0] && data[0].attributes && data[0].attributes.cluster2) {
+                    return data[0].attributes.cluster;
                 } else {
                     sessionStorage.removeItem('osio-provisioning-notification-message');
                     var message = "Cannot find cluster for user: " + keycloak.tokenParsed.preferred_username;
-                    log(message);
+                    log(message, request);
                     return Promise.reject(message);
                 }
         },(request) => {
