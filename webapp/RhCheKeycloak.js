@@ -297,9 +297,9 @@ function initAnalytics(writeKey){
                 sessionStorage.removeItem('osio-provisioning-notification-message');
                 return request;
             },(request) => {
-                json = JSON.parse(request.responseText && "truc");
+                json = JSON.parse(request.responseText);
                 if (request.status == 401 &&
-                        json &&
+                        json&.TrucMuche &&
                         json.errors &&
                         json.errors[0] &&
                         json.errors[0].detail == "token is missing") {
