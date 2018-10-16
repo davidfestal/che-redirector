@@ -311,7 +311,7 @@ function initAnalytics(writeKey){
     }
 
     function setUpNamespaces(keycloak) {
-        return get(osioApiURL + "/user/services2", keycloak.token)
+        return get(osioApiURL + "/user/services", keycloak.token)
         .catch((request) => {
             sessionStorage.removeItem('osio-provisioning-notification-message');
             track(telemetry_event_setup_namespaces);
@@ -347,7 +347,7 @@ function initAnalytics(writeKey){
 
     function identifyUser(keycloak) {
         if (window.analytics) {
-            return get(osioApiURL + "/user", keycloak.token)
+            return get(osioApiURL + "/user2", keycloak.token)
             .then((request) => {
                 try {
                     var json = JSON.parse(request.response);
