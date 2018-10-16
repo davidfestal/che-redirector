@@ -234,7 +234,26 @@ function initAnalytics(writeKey){
         }
     }
 
-    function log(errorMessage, warning) {
+    function log(error, warning) {
+        var errorMessage;
+        if (error instanceof Error) {
+            var errorMessage = error.toString();
+            if (error.fileName) {
+                errorMessage += "\nfileName = " + error.filename;
+            }
+            if (error.lineNumber) {
+                errorMessage += "\nlineNumber = " + error.lineNumber;
+            }
+            if (error.columnNumber) {
+                errorMessage += "\ncolumnNumber = " + error.columnNumber;
+            }
+            if (error.stack) {
+                errorMessage += "\nstack = " + error.stack;
+            }
+        } else {
+            errorMessage = error;
+        }
+        
         if (warning) {
             post('/api/fabric8-end2end/warning', errorMessage);
         } else {
@@ -255,7 +274,7 @@ function initAnalytics(writeKey){
     }
 
     function performAccounkLinking(keycloak) {
-        return get(osioApiURL + "/users?filter%5Busername%5D=" + encodeURIComponent(keycloak.tokenParsed.preferred_username), keycloak.token)
+        return get(osioApiURL + "/users?filter2%5Busername%5D=" + encodeURIComponent(keycloak.tokenParsed.preferred_username), keycloak.token)
         .then((request) => {
                 data = JSON.parse(request.responseText).data;
                 if (data && data[0] && data[0].attributes) {
@@ -351,7 +370,7 @@ function initAnalytics(writeKey){
 
     function identifyUser(keycloak) {
         if (window.analytics) {
-            return get(osioApiURL + "/user2", keycloak.token)
+            return get(osioApiURL + "/user", keycloak.token)
             .then((request) => {
                 try {
                     var json = JSON.parse(request.response);
@@ -422,7 +441,8 @@ function initAnalytics(writeKey){
                     }
                 } 
             }
-        } catch(err) {
+        } catch(error) {
+            log(error);
         }
     }
     
@@ -562,24 +582,10 @@ function initAnalytics(writeKey){
                         var errorMessage;
                         if (error instanceof Error) {
                             errorMessage = "Unexpected error after user provisioning";
-                            var detailedLog = error.toString();
-                            if (error.fileName) {
-                                detailedLog += "\nfileName = " + error.filename;
-                            }
-                            if (error.lineNumber) {
-                                detailedLog += "\nlineNumber = " + error.lineNumber;
-                            }
-                            if (error.columnNumber) {
-                                detailedLog += "\ncolumnNumber = " + error.columnNumber;
-                            }
-                            if (error.stack) {
-                                detailedLog += "\nstack = " + error.stack;
-                            }
-                            log(detailedLog);
                         } else {
-                            log(error);
                             errorMessage = error;
                         }
+                        log(error);
                         setStatusMessage(osio_msg_error_no_resources);
                         finalPromise.setError({ error: 'invalid_request', error_description: errorMessage });
                     });
