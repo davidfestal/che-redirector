@@ -137,7 +137,7 @@ function captchaExpired() {
     grecaptcha.execute(activationCaptcha);
 }
 function captchaFailed() {
-    parent.verification_error("ReCaptcha error for user '" + osioUserName() + "'");
+    parent.verification_error("ReCaptcha error for user '" + osioUserName() + "'", true);
 }
 
 </script>
