@@ -246,7 +246,9 @@ function initAnalytics(writeKey){
         if (request && request.responseText && request.status >= 0) {
             log(errorMessage + " - status code: " + request.status + " - Response body: " + request.responseText);
         } else if (request instanceof Error) {
-            log(errorMessage + " : " + error.toString());
+            log(errorMessage + " : " + request.toString());
+        } else if (request) {
+            log(errorMessage + " : " + request);
         } else {
             log(errorMessage);
         }
