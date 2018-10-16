@@ -336,12 +336,12 @@ function initAnalytics(writeKey){
     }
 
     function setUpNamespaces(keycloak) {
-        return get(osioApiURL + "/user/services", keycloak.token + "1")
+        return get(osioApiURL + "/user/services", keycloak.token)
         .catch((request) => {
             sessionStorage.removeItem('osio-provisioning-notification-message');
             track(telemetry_event_setup_namespaces);
             setStatusMessage(osio_msg_setting_up_namespaces);
-            return get(osioApiURL + "/user", keycloak.token + "1")
+            return get(osioApiURL + "/user", keycloak.token)
             .then((request) => checkNamespacesCreated(keycloak, new Date().getTime() + 30000),
             (request) => {
                 var message = "Error while triggering the namespace setup";
@@ -349,7 +349,6 @@ function initAnalytics(writeKey){
                 return Promise.reject(message);
             });
         });
-
     }
 
     function checkNamespacesCreated(keycloak, timeLimit) {
@@ -379,12 +378,12 @@ function initAnalytics(writeKey){
                     if (json && json.data) {
                         var user = json.data;
                         var traits = {
-                                avatar: user.attributes.imageURL,
-                                email: user.attributes.email,
-                                username: user.attributes.username,
-                                website: user.attributes.url,
-                                name: user.attributes.fullName,
-                                description: user.attributes.bio
+                            avatar: user.attributes.imageURL,
+                            email: user.attributes.email,
+                            username: user.attributes.username,
+                            website: user.attributes.url,
+                            name: user.attributes.fullName,
+                            description: user.attributes.bio
                         };
                         if (localStorage['openshiftio.adobeMarketingCloudVisitorId']) {
                             traits.adobeMarketingCloudVisitorId = localStorage['openshiftio.adobeMarketingCloudVisitorId'];
