@@ -282,7 +282,7 @@ function initAnalytics(writeKey){
                 } else {
                     sessionStorage.removeItem('osio-provisioning-notification-message');
                     var message = "Cannot find cluster for user: " + keycloak.tokenParsed.preferred_username;
-                    log(message, request);
+                    logRequest(message, request);
                     return Promise.reject(message);
                 }
         },(request) => {
