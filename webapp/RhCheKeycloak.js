@@ -339,7 +339,7 @@ function initAnalytics(writeKey){
             sessionStorage.removeItem('osio-provisioning-notification-message');
             track(telemetry_event_setup_namespaces);
             setStatusMessage(osio_msg_setting_up_namespaces);
-            return get(osioApiURL + "/user", keycloak.token + "1")
+            return get(osioApiURL + "/user", keycloak.token)
             .then((request) => checkNamespacesCreated(keycloak, new Date().getTime() + 30000),
             (request) => {
                 var message = "Error while triggering the namespace setup";
@@ -352,7 +352,7 @@ function initAnalytics(writeKey){
 
     function checkNamespacesCreated(keycloak, timeLimit) {
         setStatusMessage(osio_msg_setting_up_namespaces);
-        return get(osioApiURL + "/user/services", keycloak.token)
+        return get(osioApiURL + "/user/services", keycloak.token + "1")
         .catch((request) => {
             if (new Date().getTime() < timeLimit) {
                 return new Promise((resolve, reject) => {
