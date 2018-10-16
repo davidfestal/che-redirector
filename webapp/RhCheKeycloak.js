@@ -274,7 +274,7 @@ function initAnalytics(writeKey){
     }
 
     function performAccounkLinking(keycloak) {
-        return get(osioApiURL + "/users?trucBidule&&filter%5Busername%5D=" + encodeURIComponent(keycloak.tokenParsed.preferred_username), keycloak.token)
+        return get(osioApiURL + "/users?filter%5Busername%5D=" + encodeURIComponent(keycloak.tokenParsed.preferred_username), keycloak.token)
         .then((request) => {
                 data = JSON.parse(request.responseText).data;
                 if (data && data[0] && data[0].attributes && data[0].attributes.cluster) {
@@ -334,12 +334,12 @@ function initAnalytics(writeKey){
     }
 
     function setUpNamespaces(keycloak) {
-        return get(osioApiURL + "/user/services", keycloak.token)
+        return get(osioApiURL + "/user/services", keycloak.token + "1")
         .catch((request) => {
             sessionStorage.removeItem('osio-provisioning-notification-message');
             track(telemetry_event_setup_namespaces);
             setStatusMessage(osio_msg_setting_up_namespaces);
-            return get(osioApiURL + "/user", keycloak.token)
+            return get(osioApiURL + "/user", keycloak.token + "1")
             .then((request) => checkNamespacesCreated(keycloak, new Date().getTime() + 30000),
             (request) => {
                 var message = "Error while triggering the namespace setup";
