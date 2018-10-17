@@ -97,7 +97,7 @@ function onCaptchaLoad() {
             document.getElementById('go-message').style = "display: initial";
             document.getElementById('kc-login-button').style = "display: initial";
             document.getElementById('kc-login-button').disabled = false;
-            provision_osio = provision_impl;
+            provision_osio = provision_osio_impl;
         }
         function checkUserImpl(token) {
             parent.osioCheLoginFlow.post("/api/fabric8-end2end/verify", token)
