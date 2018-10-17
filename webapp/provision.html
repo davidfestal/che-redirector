@@ -66,6 +66,27 @@
 <script>
 const siteKey = '6LcpdnMUAAAAAAsHoTmHO3CilL9gca32TnY-BonM';
 var activationCaptcha;
+
+function provision_osio() {
+    var provisioningWindow = window.open('https://developers.redhat.com/auth/realms/rhd/protocol/openid-connect/logout?redirect_uri=' + encodeURIComponent(parent.osioProvisioningURL), 'osio_provisioning');
+    if(! provisioningWindow) {
+        parent.sessionStorage.setItem('osio-provisioning-failure', "User provisioning should happen in a separate window.<br/> \
+        Please enable popups, before retrying.");
+    } else {
+        parent.osioCheLoginFlow.track(telemetry_event_enter_provisioning_page_for_che, { user: osioUserToApprove });
+        parent.sessionStorage.setItem('osio-provisioning-notification-message', osio_msg_provisioning);
+        parent.sessionStorage.setItem('osio-provisioning', new Date().getTime());
+    }
+    parent.blur();
+    parent.focus();
+    parent.location.reload();
+}
+function verification_error(errorMessage, warning) {
+    parent.osioCheLoginFlow.log(errorMessage, warning);
+    parent.sessionStorage.setItem('osio-provisioning-failure', "User cannot be verified. Please contact support.");
+    parent.location.reload();
+}
+
 function onCaptchaLoad() {
     try {
         if (siteKey) {
@@ -80,7 +101,7 @@ function onCaptchaLoad() {
             try {
                 grecaptcha.execute(activationCaptcha);
             } catch(error) {
-                parent.verification_error("ReCaptcha cannot be executed: " + error);
+                verification_error("ReCaptcha cannot be executed: " + error);
             }
         } else {
             document.getElementById('checking-message').style = "display: none";
@@ -94,12 +115,6 @@ function onCaptchaLoad() {
 }
 function osioUserName() {
     return document.getElementById("osio-user-value").textContent;
-}
-function activateUser() {
-    if (siteKey) {
-    } else {
-        checkUser(undefined);
-    }
 }
 function checkUser(token) {
     parent.osioCheLoginFlow.post("/api/fabric8-end2end/verify", token)
@@ -123,10 +138,10 @@ function checkUser(token) {
         }
     },(error) => {
         var errorDescription;
-        if (request && request.status) {
-            errorDescription = request.status + " - " + request.statusText;
+        if (error instanceof XMLHttpRequest) {
+            errorDescription = request.status + " - " + request.responseText;
         } else {
-            errorDescription = request;
+            errorDescription = error;
         }
         var message = "Verification of user '" + userName + "' could not be submitted to the verification server: " + errorDescription;
         parent.verification_error(message);
@@ -201,7 +216,7 @@ function captchaFailed() {
                                                 style="display: none;"
                                                 class="download-hide button heavy-cta large"
                                                 name="login"
-                                                onclick="return parent.provision_osio()"
+                                                onclick="return provision_osio()"
                                                 disabled>Activate Account</button>
                                         <div id="recaptcha" 
                                              style="z-index: 999;position: fixed;">
