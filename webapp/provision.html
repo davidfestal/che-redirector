@@ -73,8 +73,8 @@ function provision_osio() {
         parent.sessionStorage.setItem('osio-provisioning-failure', "User provisioning should happen in a separate window.<br/> \
         Please enable popups, before retrying.");
     } else {
-        parent.osioCheLoginFlow.track(telemetry_event_enter_provisioning_page_for_che, { user: osioUserToApprove });
-        parent.sessionStorage.setItem('osio-provisioning-notification-message', osio_msg_provisioning);
+        parent.osioCheLoginFlow.track(parent.telemetry_event_enter_provisioning_page_for_che, { user: parent.osioUserToApprove });
+        parent.sessionStorage.setItem('osio-provisioning-notification-message', parent.osio_msg_provisioning);
         parent.sessionStorage.setItem('osio-provisioning', new Date().getTime());
     }
     parent.blur();
