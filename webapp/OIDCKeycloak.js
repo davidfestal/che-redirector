@@ -1,9 +1,4 @@
 // Add a comment at the top, just in case ;-)
-
-
-
-
-
 /*
  * Copyright (c) 2016-2018 Red Hat, Inc.
  * This program and the accompanying materials are made
